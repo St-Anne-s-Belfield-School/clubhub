@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width">
+  <title>Login</title>
+  <link href="login.css" rel="stylesheet" type="text/css" />
+</head>
+
+<body>
+  <header class="head">
+    <div class="rightHead">
+      <img class="image" src="images/stab_logo.webp" alt="logo" onClick = "location.replace('index.html');">
+      <p onClick = "location.replace('index.html');">St. Anne's Belfield School</p>
+    </div>
+    <div class="leftHead">
+      <p class="headLink" onClick = "location.replace('index.html');">Back to homepage</p>
+    </div>
+  </header>
+
+
+  <!-- type must be "module": https://www.w3schools.com/js/js_modules.asp#:~:text=JavaScript%20modules%20allow%20you%20to,in%20the%20tag.-->  
+  <script type="module" src="clubinfo.js"></script>
+  <script type="module">
+    import {login} from './script.js';
+    window.login = login;
+    import {cLogin} from './clubinfo.js';
+    window.cLogin = cLogin;
+  </script>
+
+
+  
+  <div class="loginBox">
+    <header class="subheading">Club Login</header>
+
+    <!-- label and then text input, both with ids -->
+    <!-- The "placeholder" is the grey script in the text boxes before you type anything in-->
+    <label>Username:</label><input type="text" id="username" placeholder = "Club Name">
+    <label>Password:</label><input type="password" id="password" placeholder = "Type Here">
+
+    <!-- Links to the moreInfo page and calls onclick function login(); uses username and password as parameters -->
+    <button onclick = "sessionStorage.setItem('club', document.getElementById('username').value); sessionStorage.setItem('password', document.getElementById('password').value); cLogin()" class="loginButton clubLB">Login</button>      
+
+    <!-- still needs to  -->
+    <a href="clubSignUp.html"><p></p>Registering a new club? Register here</a>
+  </div>
+</body>
+
+
+</html>

@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width">
+  <title>Log in</title>
+  <link href="login.css" rel="stylesheet" type="text/css" />
+</head>
+
+<body>
+  <header class="head">
+    <div class="rightHead">
+      <img class="image" src="images/stab_logo.webp" alt="logo" onClick = "location.replace('index.html');">
+      <p onClick = "location.replace('index.html');">St. Anne's Belfield School</p>
+    </div>
+    <div class="leftHead">
+      <p class="headLink" onClick = "location.replace('index.html');">Back to homepage</p>
+    </div>
+  </header>
+  
+
+  <!-- type must be "module": https://www.w3schools.com/js/js_modules.asp#:~:text=JavaScript%20modules%20allow%20you%20to,in%20the%20tag.-->  
+  <script type="module" src="script.js"></script>
+  <script type="module">
+    import {login} from './script.js';
+    window.login = login;
+  </script>
+
+<div class="loginBox">
+  <header class="subheading">Admin login</header>
+<!-- label and then text  input, both with ids -->
+ <!-- PROPER FORMAT NEEDED? (IE username and password) -->
+  <label>Username:</label><input type="text" id="Username"> 
+  <label>Password:</label><input type="password" id="Password">
+  <button class="loginButton" onclick="login(document.getElementById('Username').value, document.getElementById('Password').value );">Log In</button>
+
+</body>
+
+</html>

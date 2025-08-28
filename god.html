@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Fixed the type attribute in the link tag -->
+    <link rel="stylesheet" type="text/css" href="style.css">
+    <script type="module" src="script.js"></script>
+    <title>God</title>
+    <script type="module">
+        import { checkLogin, displayClubsInDanger, renderAdminClubInfo, logout, resetPoints, deleteClub, goToClub} from './script.js';
+        window.checkLogin = checkLogin;
+        window.resetPoints = resetPoints;
+        window.displayClubsInDanger = displayClubsInDanger;
+        window.renderAdminClubInfo = renderAdminClubInfo;
+        window.logout = logout;
+        window.deleteClub = deleteClub;
+        window.goToClub = goToClub;
+        renderAdminClubInfo();
+        checkLogin();
+        displayClubsInDanger();
+    </script>
+</head>
+<body>
+    <!-- creates the header box and the title, inside the box -->
+    <header class="header" id="header">
+        <h1> Admin Page</h1>
+    </header>
+
+    <!-- Creates a bar bellow hearder box with nav buttons -->
+    <div class="nav">
+        <button class="button" onClick="location.replace('index.html');">Home</button>
+        <button class="button" onClick = "location.replace('clubDirectory.html');">Club Directory</button>
+        <button class="button" id="logout" onclick="logout()" >Logout</button>
+    </div>
+
+    <div class="adminWrap">
+
+            <div class="clubsInDangerWrapper">
+                <div class="clubsInDanger" id="clubsInDangerDiv">
+                    <div class="clubsInDangerTitle">Clubs in Danger!</div>
+                    <div class="clubsInDangerButtons" id="clubsInDangerButtonsContainer">
+                        <!-- JS will insert buttons here -->
+                    </div>
+                </div>
+                <div class="resetPointsDiv">
+                    <div class="resetPointsText">Reset Points for All Clubs</div>
+                    <button class="resetPointsButton" onclick="resetPoints()"><span>Reset Points</span></button>
+                </div>
+            </div>
+
+        <div class="adminLineTwo"></div>
+
+        <div class="mainAdminBox">
+            <div class="search-container">
+                <div id="searchUsers" class="instant-search">
+                <div class="instant-search__input-container">
+                    <input class="instant-search__input" type="text" spellcheck="false" placeholder="                     Search For Club Here"/>
+                    <img class="instant-search__icon" src="images/search-icon.png" alt="search"/>
+                </div>
+                <!-- results generate here -->
+                </div>
+            </div>
+
+            <div class="adminClubInfoWrapper" id="adminClubInfoWrapper">
+                <div class="clubnameWrapper">
+                    <div class="adminLine"></div>
+                    <div class="adminClubName" id="adminClubName">Club Name</div>
+                    <div class="adminLine"></div>
+                </div>
+                <div class="adminClubInfo">
+                    <div class="adminInfoSplit">
+                        <div class="adminaboutClub" id="adminaboutClub">Please Search for a club or click on a club in danger to display club information!</div>
+                        <div class="adminNextMeeting" id="adminNextMeeting">Next Meeting</div>
+                    </div>
+                    <div class="adminInfoSplit">
+                        <div class="adminInDangerDiv" id="adminInDangerDiv"></div>
+                        <div class="adminPastMeetings" id="adminPastMeetings">Past Meetings</div>
+                    </div>
+                </div>
+            </div>
+            <div class="DCB-GCB-Wrapper">
+                <button class="deleteClubButton" onclick="deleteClub()">
+                    <span class="buttonText">Delete Club</span>
+                    <span class="spark spark1"></span>
+                    <span class="spark spark2"></span>
+                    <span class="spark spark3"></span>
+                    <span class="spark spark4"></span>
+                    <span class="spark spark5"></span>
+                    <span class="spark spark6"></span>
+                    <span class="spark spark7"></span>
+                    <span class="spark spark8"></span>
+                    <span class="spark spark9"></span>
+                    <span class="spark spark10"></span>
+                    <span class="spark spark11"></span>
+                    <span class="spark spark12"></span>
+                    <span class="spark spark13"></span>
+                    <span class="spark spark14"></span>
+                    <span class="spark spark15"></span>
+                </button>
+                <button class="adminGoToClubButton" onclick="goToClub()"><span>Go to Club's Page</span></button>
+            </div>
+        </div>
+    </div>
+
+    <div class="adminLineThree"></div>
+    <br>
+    <!-- creates a footer at the bottom of the page -->
+    <div class="footer">
+        <div class="logos">
+            <img class="logo" src="images/stab_logo.webp" alt="logo">
+        </div>
+        <div class="developersWrapper">
+            <div class="devSplit">
+                <div>Developers:</div>
+            </div>
+            <div class="devSplit">
+                <div>Kate R. '26</div>
+                <div>Brynne P. '25</div>
+                <div>Ryan D. '25</div>
+            </div>
+        </div>
+    </div>
+
+</body>

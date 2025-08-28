@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width">
+  <title>Choose Acount Type</title>
+  <link href="login.css" rel="stylesheet" type="text/css" />
+</head>
+
+<body>
+    <header class="head">
+      <div class="rightHead">
+        <img class="image" src="images/stab_logo.webp" alt="logo" onClick = "location.replace('index.html');">
+        <p onClick = "location.replace('index.html');">St. Anne's Belfield School</p>
+      </div>
+      <div class="leftHead">
+        <p class="headLink" onClick = "location.replace('index.html');">Back to homepage</p>
+      </div>
+    </header>
+  <!-- type must be "module": https://www.w3schools.com/js/js_modules.asp#:~:text=JavaScript%20modules%20allow%20you%20to,in%20the%20tag.-->  
+  <script type="module" src="script.js"></script>
+  <script type="module">
+    import {login} from './script.js';
+    window.login = login;
+  </script>
+  
+<div class="loginBox">
+  
+  <header class="subheading">Sigh in</header>
+  <div class="text">whate type of acount do you want to sighn into?</div>
+
+<!-- label and then text  input, both with ids -->
+
+  <button class="button" onclick= "location.replace('clubLogin.html');">Club acount</button>
+  <button class="button" onClick = "location.replace('login.html');">Admin</button>
+
+    <div class="line"></div>
+    <div class="text">don't have a club acount:</div> 
+    <button class="link" onClick = "location.replace('clubSignUp.html');">Sign up!</button>
+</body>
+
+</html>

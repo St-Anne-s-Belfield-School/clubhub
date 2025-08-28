@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width">
+  <title>Sign Up</title>
+  <link href="login.css" rel="stylesheet" type="text/css" />
+</head>
+
+<body>
+  <header class="head">
+    <div class="rightHead">
+      <img class="image" src="images/stab_logo.webp" alt="logo" onClick = "location.replace('index.html');">
+      <p onClick = "location.replace('index.html');">St. Anne's Belfield School</p>
+    </div>
+    <div class="leftHead">
+      <p class="headLink" onClick = "location.replace('index.html');">Back to homepage</p>
+    </div>
+  </header>
+
+  <!-- type must be "module": https://www.w3schools.com/js/js_modules.asp#:~:text=JavaScript%20modules%20allow%20you%20to,in%20the%20tag.-->  
+  <script type="module">
+    import {register} from './club.js';
+    window.register = register;
+  </script>
+
+  <div class="loginBox">
+    <header class="subheading">Club Registration</header>
+      <!-- label and then text input, both with ids -->
+      <!-- The "placeholder" is the grey script in the text boxes before you type anything in-->
+      <label>Username:</label><input type="text" id="username" placeholder = "Username">
+      <label>Password:</label><input type="text" id="password" placeholder = "Password">
+
+      <!-- Links to the moreInfo page and calls onclick function login(); uses username and password as parameters -->
+      <button class="button continuebutton" onclick="register(document.getElementById('username').value, document.getElementById('password').value); ">Continue</button>
+      <a href="clubLogin.html"><p></p>Already have a club? Login Here</a>
+  </div>
+</body>
+
+</html>

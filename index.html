@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Fixed the type attribute in the link tag -->
+    <link rel="stylesheet" type="text/css" href="style.css">
+   
+    <title>St. Anne's-Belfield Club Hub</title>
+</head>
+<body>
+
+ <script type="module" src="script.js"></script>
+ <script type="module" src="./scriptC.js"></script>
+ <script type="module">
+   import {login} from './script.js';
+   import {addMeetings, correctNavDisplay} from './scriptC.js';
+   import {loadLeaderboard} from './leaderboardScore.js';
+   window.correctNavDisplay = correctNavDisplay;
+   window.addMeetings = addMeetings;
+   window.loadLeaderboard = loadLeaderboard;
+   correctNavDisplay();
+   addMeetings();
+   loadLeaderboard();
+ </script>
+     <!-- creates the header box and the title, inside the box -->
+    <header class="header" id="header">
+        <h1> Clubba Hubba</h1>
+    </header>
+
+    <!-- Creates a bar below header box with nav buttons -->
+   <div class="nav">
+       <!-- <a class="button" href="#calendar">Calendar</a> -->
+        <button class="button" onClick = "location.replace('clubDirectory.html');">Club Directory</button>
+        <button class="button" id="login" onClick = "location.replace('choose.html');">Log in</button>
+        <button class="button" id="logout" onclick="" >Logout</button>
+        <button class="button" id="adminPageBtn"onclick="location.replace('god.html');" >Admin Page</button>
+   </div>
+
+
+    <!-- creates a box to hold the ranking stuff -->
+   <div class="rankings">
+        <div class="rankingsBox">
+            <h2 class="rankingTitle"> CLUB ENGAGEMENT RANKINGS (L2)</h2>
+            <div class="topTenList">
+                <div class="topThree">
+                    <img src="images/trophy.png" alt="trophy" class="trophy">
+                    <p id="firstLTwo">First</p>
+                    <img src="images/trophy.png" alt="trophy" class="trophy">
+                </div>
+                <div class="topThree">
+                    <img src="images/Silver.png" alt="trophy" class="trophy">
+                    <p id="secondLTwo">Second</p>
+                    <img src="images/Silver.png" alt="trophy" class="trophy">
+                </div>
+                <div class="topThree">
+                    <img src="images/Bronze.png" alt="trophy" class="trophy">
+                    <p id="thirdLTwo">Third</p>
+                    <img src="images/Bronze.png" alt="trophy" class="trophy">
+                </div>
+            </div>
+        </div>
+
+        <div class="rankingsBox">
+            <h2 class="rankingTitle"> CLUB ENGAGEMENT RANKINGS (L3)</h2>
+            <div class="topTenList">
+                <div class="topThree">
+                    <img src="images/trophy.png" alt="trophy" class="trophy">
+                    <p id="firstLThree">First</p>
+                    <img src="images/trophy.png" alt="trophy" class="trophy">
+                </div>
+                <div class="topThree">
+                    <img src="images/Silver.png" alt="trophy" class="trophy">
+                    <p id="secondLThree">Second</p>
+                    <img src="images/Silver.png" alt="trophy" class="trophy">
+                </div>
+                <div class="topThree">
+                    <img src="images/Bronze.png" alt="trophy" class="trophy">
+                    <p id="thirdLThree">Third</p>
+                    <img src="images/Bronze.png" alt="trophy" class="trophy">
+                </div>
+            </div>
+        </div>
+   </div>
+    
+    <!-- Hidden Modal for Delete Confirmation -->
+    <div id="eventInfoModal" class="eventInfoModal">
+        <div class="eventInfoModalContent">
+        <p id="meetInfoPopUp">Meeting information:</p>
+        <p id="clubPopUp">Club: </p>
+        <p id="datePopUp">Date: </p>
+        <p id="timePopUp">Time: </p>
+        <p id="locationPopUp">Location: </p>
+        <p id="descriptionPopUp">Description: </p>
+        <button id="goToClub" class="confbtn"  onclick="location.replace('clubDash.html');">Go to club page</button>
+        <br>
+        <button id="confCancelDelete" class="confbtn" onclick="document.getElementById('eventInfoModal').style.display = 'none';">Close</button>
+        </div>
+    </div>
+    <!-- END OF DELETE CONF MODAL!!!! -->
+    
+    <!-- Calendar Section -->
+    <section id="calendar">  
+        <div class="calendarTitle">
+            <h1>Calendar</h1>
+        </div>
+
+        <!-- Calendar Display -->
+        <div class="calendar">
+            <!-- Calendar Header -->
+            <div class="Cheader">
+               <div id="prev" class="arrow left">
+                    <div class="arrow-container">
+                        <i></i>
+                    </div>
+                </div>
+                <div id="month-year"></div>
+                <div id="next" class="arrow right">
+                    <div class="arrow-container">
+                        <i></i>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Days of the Week -->
+            <div class="weekdays">
+                <div class="dayName">Sun</div> <!-- Sunday -->
+                <div class="dayName">Mon</div> <!-- Monday -->
+                <div class="dayName">Tue</div> <!-- Tuesday -->
+                <div class="dayName">Wed</div> <!-- Wednesday -->
+                <div class="dayName">Thu</div> <!-- Thursday -->
+                <div class="dayName">Fri</div> <!-- Friday -->
+                <div class="dayName">Sat</div> <!-- Saturday -->
+            </div>
+
+            <!-- Calendar Days -->
+            <div class="days" id="days"></div> <!-- Populated dynamically with days -->
+
+        </div>
+    </section>
+
+
+
+<!-- Footer -->
+<div class="footer">
+    <div class="logos">
+        <img class="logo" src="images/stab_logo.webp" alt="logo">
+    </div>
+    <div class="developersWrapper">
+        <div class="devSplit">
+            <div>Developers:</div>
+        </div>
+        <div class="devSplit">
+            <div>Kate R. '26</div>
+            <div>Brynne P. '25</div>
+            <div>Ryan D. '25</div>
+        </div>
+    </div>
+</div>
+
+<!-- Your scriptC.js -->
+
+</body>
+</html>
