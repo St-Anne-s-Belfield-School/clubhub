@@ -167,3 +167,10 @@ input:focus {
     font-size: 2.5vw;
     box-sizing: border-box; /* includes padding in size calculations */
 }
+/* Nav bar with centered buttons */
+.nav {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: rgb(141, 13, 24);
+}
