@@ -174,3 +174,17 @@ input:focus {
     align-items: center;
     background-color: rgb(141, 13, 24);
 }
+/* customizes the indavidual buttons in the nav bar */
+.button{
+    cursor: pointer;
+    padding-top: 7px; padding-bottom: 7px; padding-left: 1vw;  padding-right: 1vw;
+    background-color: transparent; border-color: transparent;
+    font-family: 'Inter', sans-serif; font-size: 1.3vw;
+    color: white; text-decoration: none;
+}
+
+/* hover animation */
+.button:hover {
+    background-color: white; color:rgb(141, 13, 24);
+}
+/* --- end of navigation bar --- */
