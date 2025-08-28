@@ -438,19 +438,24 @@ export async function renderAdminClubInfo() {
 
 
 
-export async function deleteClub(){
+export async function deleteClub() {
   const confirmed = confirm("Are you sure you want to delete this club? It will be removed FOREVER!!!");
   const clulbUser = sessionStorage.getItem("adminClub");
-    if (confirmed) {
-      const doubleConfirmed = confirm("Are you 100% sure?");
-  
-      if (doubleConfirmed) {
-        await deleteDoc(doc(db, "clubs", clulbUser));
-        location.reload();
-      };
-  };
-}
+  if (confirmed) {
+    const doubleConfirmed = confirm("Are you 100% sure?");
+    if (doubleConfirmed) {
+      // Delete all documents in the 'all-meetings' subcollection
+      const meetingsColRef = collection(db, "clubs", clulbUser, "all-meetings");
+      const meetingsSnapshot = await getDocs(meetingsColRef);
+      const deletePromises = meetingsSnapshot.docs.map((docSnap) => deleteDoc(docSnap.ref));
+      await Promise.all(deletePromises);
 
+      // Now delete the club document
+      await deleteDoc(doc(db, "clubs", clulbUser));
+      location.reload();
+    }
+  }
+}
 export function goToClub(){
     const clulbUser = sessionStorage.getItem("adminClub");
   sessionStorage.setItem("club", clulbUser);
