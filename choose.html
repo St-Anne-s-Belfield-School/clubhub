@@ -9,15 +9,19 @@
 </head>
 
 <body>
-    <header class="head">
-      <div class="rightHead">
-        <img class="image" src="images/stab_logo.webp" alt="logo" onClick = "location.replace('index.html');">
-        <p onClick = "location.replace('index.html');">St. Anne's Belfield School</p>
-      </div>
-      <div class="leftHead">
-        <p class="headLink" onClick = "location.replace('index.html');">Back to homepage</p>
-      </div>
+     <!-- creates the header box and the title, inside the box -->
+    <header class="header" id="header">
+        <h1> St. Anne's-Belfield Club Hub</h1>
     </header>
+
+    <!-- Creates a bar below header box with nav buttons -->
+   <div class="nav">
+       <!-- <a class="button" href="#calendar">Calendar</a> -->
+        <button class="button" onClick = "location.replace('clubDirectory.html');">Club Directory</button>
+        <button class="button" id="login" onClick = "location.replace('choose.html');">Log in</button>
+        <button class="button" id="logout" onclick="" >Logout</button>
+        <button class="button" id="adminPageBtn"onclick="location.replace('god.html');" >Admin Page</button>
+   </div>
   <!-- type must be "module": https://www.w3schools.com/js/js_modules.asp#:~:text=JavaScript%20modules%20allow%20you%20to,in%20the%20tag.-->  
   <script type="module" src="script.js"></script>
   <script type="module">
