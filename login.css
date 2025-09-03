@@ -1,7 +1,6 @@
 /* --- login --- */
 body{
-    font-family: Georgia, 'Times New Roman', Times, serif;
-    padding-bottom: 15px;
+    font-family: 'Inter', sans-serif;    padding-bottom: 15px;
     background-color: rgba(146, 22, 32, 0.564);
     display: flex;
     flex-direction: column;
@@ -122,7 +121,7 @@ input:focus {
 
 /* Header with background image */
 .header {
-    padding: 0px 20px; /* gives enough vertical space without issues */
+    padding: 10px 20px; /* gives enough vertical space without issues */
     color: white;
     background-color: rgb(0, 0, 0);
     background-image: url("images/Backgroud.png");
