@@ -456,6 +456,7 @@ export async function deleteClub() {
     }
   }
 }
+
 export function goToClub(){
     const clulbUser = sessionStorage.getItem("adminClub");
   sessionStorage.setItem("club", clulbUser);
