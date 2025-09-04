@@ -215,10 +215,17 @@ export const displayClubInfo = async function () {
     }
   };
 }
-
+  var driveButton= document.createElement("a");
+  driveButton.innerHTML = "Club Drive";
+  driveButton.classList.add("driveButton");
+  driveButton.id = "clubDrive";
+  driveButton.href = clubDoc.data().driveLink;
+  driveButton.target = "_blank"; // Opens in a new tab
+  driveButton.style.textDecoration = "none";
 
   // appends objects to html locations/ objects
   bio.appendChild(clubBio);
+  bio.appendChild(driveButton);
   quickFacts.appendChild(leaderNames);
   quickFacts.appendChild(dateFounded);
   quickFacts.appendChild(meetingPlan);
