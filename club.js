@@ -118,6 +118,7 @@ export const moreInfo = async function(){
     clubName: document.getElementById("clubName").value,
     clubLeaders: leaderList,
     meetingTime: meetingTime,
+    driveLink: document.getElementById("driveShareLink").value,
     type: document.getElementById("typeSelection").value,
     // parses it into list instead of string; from sessionStorage from MultiSelect.js page
     tags: JSON.parse(sessionStorage.getItem("tags")),
@@ -132,8 +133,8 @@ export const moreInfo = async function(){
 // however, only issue is that the clusb thesmelves are not showing up in firebase --> truing to problem solve this next
 
 //changes URL
-  sessionStorage.setItem("club", document.getElementById("clubName").value);
-  window.location.href = "clubDash.html";
+  // sessionStorage.setItem("club", document.getElementById("clubName").value);
+  window.location.href = "clubDirectory.html";
 }
 
 //collection --> clubs
