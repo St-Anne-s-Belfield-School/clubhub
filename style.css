@@ -29,6 +29,7 @@ body {
     padding: 0;
     background-color: white;
     font-family: 'Inter', sans-serif;
+    overflow-x: hidden;
 }
 
 /* Header with background image */
