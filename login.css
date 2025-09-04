@@ -1,157 +1,50 @@
-/* --- login --- */
-body{
-    font-family: 'Inter', sans-serif;    padding-bottom: 15px;
-    background-color: rgba(146, 22, 32, 0.564);
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    margin:0px;
-  }
-p{
-    margin: 5px;
-}
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width">
+  <title>Log in</title>
+  <link href="login.css" rel="stylesheet" type="text/css" />
+</head>
+
+<body>
+   <!-- creates the header box and the title, inside the box -->
+    <header class="header" id="header">
+        <h1> Log In</h1>
+    </header>
+
+    <!-- Creates a bar below header box with nav buttons -->
+   <div class="nav">
+    
+        <button class="button" onClick="location.replace('index.html');">Home</button>
+        <button onClick="location.replace('clubDirectory.html');" class="button">Club Directory</button>
+        <button class="button" id="login" onClick = "location.replace('choose.html');">Log in</button>
+        <button class="button" id="logout" >Logout</button>
+        <button class="button" id="adminPageBtn"onclick="location.replace('god.html');" >Admin Page</button>
 
 
+   </div>
+  
 
+  <!-- type must be "module": https://www.w3schools.com/js/js_modules.asp#:~:text=JavaScript%20modules%20allow%20you%20to,in%20the%20tag.-->  
+  <script type="module" src="script.js"></script>
+  <script type="module">
+    import {login} from './script.js';
+    window.login = login;
+    import {correctNavDisplayCD} from './clubinfo.js';
+        window.correctNavDisplayCD = correctNavDisplayCD;
+        correctNavDisplayCD();
+  </script>
 
-img{
-    height: 30px;
-}
+<div class="loginBox">
+  <header class="subheading">Admin login</header>
+<!-- label and then text  input, both with ids -->
+ <!-- PROPER FORMAT NEEDED? (IE username and password) -->
+  <label>Username:</label><input type="text" id="Username"> 
+  <label>Password:</label><input type="password" id="Password">
+  <button class="loginButton" onclick="login(document.getElementById('Username').value, document.getElementById('Password').value );">Log In</button>
 
-/* --- loginBox styling --- */
-.loginBox {
-    display: flex; flex-direction: column; align-items: center; justify-content: center;
-    padding: 30px 100px; margin-top: 5%; border-radius: 10px;
-    background-color: white; font-family: Helvetica, sans-serif;
-    box-shadow: 0px 5px 15px rgba(120, 10, 19, 0.44);
-    width: 300px;
-}
+</body>
 
-label {
-    font-size: 16px; font-family: Helvetica, sans-serif;
-    margin: 10px 0 5px 0;
-    color: black;
-}
-
-input {
-    width: 100%;
-    padding: 12px;
-    margin-bottom: 20px;
-    border: 2px solid rgba(0, 0, 0, 0.1);
-    border-radius: 8px;
-    font-size: 16px;
-    box-sizing: border-box;
-    outline: none;
-    transition: border-color 0.3s;
-}
-
-input:focus {
-    border-color: rgb(141, 13, 24);
-}
-
-.loginButton {
-    cursor: pointer;
-    width: 50%;
-    padding: 15px;
-    font-size: 18px;
-    background-color: rgb(141, 13, 24);
-    color: white;
-    border: none;
-    border-radius: 40px;
-    transition: background-color 0.3s;
-}
-.clubLB {
-    width: 100%;
-}
-.loginButton:hover {
-    background-color: rgb(120, 10, 19);
-}
-
-.line {
-    width: 75%;
-    border: none;
-    border-top: 2px dotted lightgray;
-    margin: 15px 0;
-}
-
-.link {
-    color: rgb(141, 13, 24);
-    text-decoration: underline;
-    background-color: transparent;
-    border: none;
-    cursor: pointer;
-    font-size: 14px;
-}
-
-.link:hover {
-    color: rgb(0, 72, 255);
-}
-
-
-
-.line{
-    border: none;
-    border-top: 2px dotted lightgray;
-    color: transparent;
-    background-color: transparent;
-    height: 5px;
-    width: 75%;
-    margin-top: 10px;
-    margin-bottom: 5px;
-}
-
-.link{
-    color: black;
-    text-decoration: underline;
-    border: none;
-    background-color: transparent;
-}
-
-.subheading{
-    font-size: 30px; font-family: Helvetica, sans-serif;
-    text-align: center;
-}
-.text{
-    font-family: Helvetica, sans-serif;
-}
-
-.link:hover{
-    color: rgb(0, 72, 255);
-}
-
-/* Header with background image */
-.header {
-    padding: 10px 20px; /* gives enough vertical space without issues */
-    color: white;
-    background-color: rgb(0, 0, 0);
-    background-image: url("images/Backgroud.png");
-    background-size: cover;
-    background-position: center; /* centers the background image */
-    text-align: center;
-    font-size: 2.5vw;
-    box-sizing: border-box; /* includes padding in size calculations */
-    width:100%;
-}
-/* Nav bar with centered buttons */
-.nav {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    background-color: rgb(141, 13, 24);
-    width: 100%;
-    box-sizing: border-box; /* includes padding in size calculations */
-}
-/* customizes the indavidual buttons in the nav bar */
-.button{
-    cursor: pointer;
-    padding-top: 7px; padding-bottom: 7px; padding-left: 1vw;  padding-right: 1vw;
-    background-color: transparent; border-color: transparent;
-    font-family: 'Inter', sans-serif; font-size: 1.3vw;
-    color: white; text-decoration: none;
-}
-
-/* hover animation */
-.button:hover {
-    background-color: white; color:rgb(141, 13, 24);
-}
-/* --- end of navigation bar --- */
+</html>
