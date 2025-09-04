@@ -9,20 +9,28 @@
 </head>
 
 <body>
-  <header class="head">
-    <div class="rightHead">
-      <img class="image" src="images/stab_logo.webp" alt="logo" onClick = "location.replace('index.html');">
-      <p onClick = "location.replace('index.html');">St. Anne's Belfield School</p>
-    </div>
-    <div class="leftHead">
-      <p class="headLink" onClick = "location.replace('index.html');">Back to homepage</p>
-    </div>
-  </header>
+  <!-- creates the header box and the title, inside the box -->
+    <header class="header" id="header">
+        <h1> Log In</h1>
+    </header>
+
+    <!-- Creates a bar below header box with nav buttons -->
+   <div class="nav">
+       <button class="button" onClick="location.replace('index.html');">Home</button>
+        <button onClick="location.replace('clubDirectory.html');" class="button">Club Directory</button>
+        <button class="button" id="login" onClick = "location.replace('choose.html');">Log in</button>
+        <button class="button" id="logout" >Logout</button>
+        <button class="button" id="adminPageBtn"onclick="location.replace('god.html');" >Admin Page</button>
+
+   </div>
 
   <!-- type must be "module": https://www.w3schools.com/js/js_modules.asp#:~:text=JavaScript%20modules%20allow%20you%20to,in%20the%20tag.-->  
   <script type="module">
     import {register} from './club.js';
     window.register = register;
+    import {correctNavDisplayCD} from './clubinfo.js';
+        window.correctNavDisplayCD = correctNavDisplayCD;
+        correctNavDisplayCD();
   </script>
 
   <div class="loginBox">
@@ -33,7 +41,7 @@
       <label>Password:</label><input type="text" id="password" placeholder = "Password">
 
       <!-- Links to the moreInfo page and calls onclick function login(); uses username and password as parameters -->
-      <button class="button continuebutton" onclick="register(document.getElementById('username').value, document.getElementById('password').value); ">Continue</button>
+      <button class="loginButton" onclick="register(document.getElementById('username').value, document.getElementById('password').value); ">Continue</button>
       <a href="clubLogin.html"><p></p>Already have a club? Login Here</a>
   </div>
 </body>
