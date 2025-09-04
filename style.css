@@ -1,3 +1,27 @@
+#bio .driveButton {
+  margin-top: auto;
+  align-self: flex-end;
+  margin-bottom: 10px;
+  width: 120px;
+  min-width: 90px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  background: #8d0d18;
+  color: #fff;
+  border-radius: 6px;
+  font-size: 1rem;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+#bio .driveButton:hover {
+  background: #a81a25;
+  color: #fff;
+}
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
 
 body {
@@ -665,6 +689,19 @@ resized to fit nicely beside the calendar -- */
   font-size: 1.05rem;
 }
 
+/* Make #bio a flex column and push .driveButton to the bottom */
+#bio {
+  display: flex;
+  flex-direction: column;
+  min-height: 200px; /* adjust as needed */
+  position: relative;
+}
+#bio .driveButton {
+  margin-top: auto;
+  align-self: flex-end;
+  margin-bottom: 10px;
+}
+
 h4 {
   font-weight: normal;
   font-family: 'Inter', sans-serif;
@@ -780,7 +817,25 @@ h4 {
   border-radius: 8px;
   border: none;
   background-color: rgb(141, 13, 24);
-  transition: all 0.2s ease;
+  color: white;
+  transition: all 0.1s ease;
+  cursor: pointer;
+}
+
+.driveButton {
+  width: 200px;
+  height: 40px;
+  padding: 6px 16px;
+  
+  font-size: 15px;
+  font-family: 'Inter', sans-serif;
+  border-radius: 8px;
+  border: none;
+  background-color: rgb(141, 13, 24);
+  color: white;
+  cursor: pointer;
+} .driveButton:hover {
+    box-shadow: 0 2px 4px gray;
 }
 
 .addButton:hover {
