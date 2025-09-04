@@ -4,46 +4,256 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width">
-  <title>Log in</title>
-  <link href="login.css" rel="stylesheet" type="text/css" />
+  <title>Extra Acount Info</title>
+
+<!-- link to regular css -->
+  <link href="style.css" rel="stylesheet" type="text/css" />
+  <!-- link to css specific for the multiselect option. Because the code for the multiselect was extensive, it seemed logical to include it on its own page for organizational value. -->
+  <link href="MultiSelect.css" rel="stylesheet" type="text/css">
 </head>
 
 <body>
-   <!-- creates the header box and the title, inside the box -->
-    <header class="header" id="header">
-        <h1> Log In</h1>
-    </header>
-
-    <!-- Creates a bar below header box with nav buttons -->
-   <div class="nav">
-    
-        <button class="button" onClick="location.replace('index.html');">Home</button>
-        <button onClick="location.replace('clubDirectory.html');" class="button">Club Directory</button>
-        <button class="button" id="login" onClick = "location.replace('choose.html');">Log in</button>
-        <button class="button" id="logout" >Logout</button>
-        <button class="button" id="adminPageBtn"onclick="location.replace('god.html');" >Admin Page</button>
-
-
-   </div>
-  
+  <header id="head">
+    <div id="rightHead">
+      <img id="image" src="images/stab_logo.webp" alt="logo">
+      <p>St. Anne's Belfield School</p>
+    </div>
+    <div id="leftHead">
+    </div>
+  </header>
 
   <!-- type must be "module": https://www.w3schools.com/js/js_modules.asp#:~:text=JavaScript%20modules%20allow%20you%20to,in%20the%20tag.-->  
-  <script type="module" src="script.js"></script>
+  <script type="module" src="club.js"></script>
   <script type="module">
-    import {login} from './script.js';
-    window.login = login;
-    import {correctNavDisplayCD} from './clubinfo.js';
-        window.correctNavDisplayCD = correctNavDisplayCD;
-        correctNavDisplayCD();
+    import {register, moreInfo} from './club.js';
+    window.register = register;
+    window.moreInfo = moreInfo;
+   
+
   </script>
 
-<div class="loginBox">
-  <header class="subheading">Admin login</header>
-<!-- label and then text  input, both with ids -->
- <!-- PROPER FORMAT NEEDED? (IE username and password) -->
-  <label>Username:</label><input type="text" id="Username"> 
-  <label>Password:</label><input type="password" id="Password">
-  <button class="loginButton" onclick="login(document.getElementById('Username').value, document.getElementById('Password').value );">Log In</button>
+  <br><br/>
+
+  <header id="moreinfoHeader">More Information</header>
+  <div id="moreInfoWrapper">
+
+<!-- label and then text input, both with ids -->
+  <br><br/>
+  <!-- same placeholder option here -->
+<label>Club Name:</label><input type="text" id="clubName" placeholder = "Type Here">
+ 
+  <br><br/>
+  
+  <!-- needs div here so that can call leaderNumber on section -->
+  <div id="leaderNumber">
+    <label for="number">Number of Club Leaders:</label>
+       <select id="number" name="number" onchange="leaderNumber();">
+              <option value="choose">choose</option>
+              <option value="one">1</option>
+              <option value="two">2</option>
+              <option value="three">3</option>
+       </select>
+       <!-- where the new blanks populate; VERY important -->
+       <div id="moreOptions">
+<!-- meant to look empty; will populate -->
+       </div>
+    </div>
+
+    <br><br/>
+  
+    <!-- similar to Number of Club Leaders functionality; if select other, blank populates in below empty div -->
+    <div id="meetingFrequency">
+      <label for="meeting">Meeting Frequency:</label>
+         <select id="meeting" name="meeting" onchange="meetingFrequency();">
+                <option value="choose">choose</option>
+                <option value="monthly">monthly</option>
+                <option value="biweekly">biweekly</option>
+                <option value="weekly">weekly</option>
+                <option value="twice a week">twice a week</option>
+                <option value="other">other</option>
+
+         </select>
+         <div id="meetingTime">
+  
+         </div>
+      </div>
+      <br>
+      <div id="type">
+        <label for="type">Type of Club:</label>
+           <select id="typeSelection" name="type">
+                  <option value="choose">choose</option>
+                  <option value="L1">L1</option>
+                  <option value="L2">L2</option>
+                  <option value="L3">L3</option>
+  
+           </select>
+
+      <br><br/>
+
+      <!-- same placeholder option here -->
+      <label>Number of Members:</label><input type="text" id="memberCount" placeholder = "Type Here">
+
+      <br><br/>
+
+      <!-- same placeholder option here -->
+    <label>Year Founded:</label><input type="text" id="yearFounded" placeholder = "Type Here">
+     
+      <br><br/>
+
+      <label>Bio:</label>
+      <br><br/>
+      <textarea type="text" id="bio" placeholder = "Type Here"></textarea>
+      <br><br/>
+    
+      <label>Club Google Drive Link:</label><input type="text" id="driveShareLink" placeholder = "Create a Google Drive folder for your club resources and paste the share link here">
+
+
+    </div>
+<script>
+    function leaderNumber(){
+
+      // document.getElementById("leaderOne").remove();
+      // document.getElementById("br").remove();
+      // document.getElementById("input").remove();
+      // document.getElementById("leaderTwo").remove();
+      // document.getElementById("leaderThree").remove();
+
+      // leaderOne.parentNode.removeChild(leaderOne);
+      // leaderTwo.parentNode.removeChild(leaderTwo);
+      // leaderThree.parentNode.removeChild(leaderThree);
+
+      // resets moreOptions (which is the empty div where the blanks populate) to be empty so that each time the onclick function is triggered, the populated blanks don't just stack below each other
+      document.getElementById("moreOptions").innerHTML = "";
+      // all things we learned in previous years mostly
+      // gets value of selected dropdown choice
+        var number = document.getElementById("number").value;
+        
+        // if number = 1, populate 1 blank for the leader name below
+        if(number == "one"){
+            var leaderOne = document.createElement('label');
+            console.log("one");
+            leaderOne.innerHTML="Leader Name:";
+            document.getElementById("moreOptions").appendChild(document.createElement("br"));
+            document.getElementById("moreOptions").appendChild(leaderOne);
+            var inp = document.createElement("input");
+            inp.setAttribute("id", "leader1");
+            document.getElementById("moreOptions").appendChild(inp);
+            // .setAtrpute(id)
+        }
+        // if number = 2, populate 2 blanks for the leaders name below
+        else if(number == "two"){
+          var leaderOne = document.createElement('label');
+          var leaderTwo = document.createElement('label');
+            console.log("two");
+            leaderOne.innerHTML="Leader 1 Name:";
+            leaderTwo.innerHTML="Leader 2 Name:";
+            document.getElementById("moreOptions").appendChild(document.createElement("br"));
+            document.getElementById("moreOptions").appendChild(leaderOne);
+            var inp = document.createElement("input");
+            inp.setAttribute("id", "leader1");
+            document.getElementById("moreOptions").appendChild(inp);
+
+            document.getElementById("moreOptions").appendChild(document.createElement("br"));
+            document.getElementById("moreOptions").appendChild(leaderTwo);
+            var inp2 = document.createElement("input");
+            inp2.setAttribute("id", "leader2");
+            document.getElementById("moreOptions").appendChild(inp2);
+        }
+        // if number = 3, populate 3 blanks for the leader names below
+        else if(number == "three"){
+          var leaderOne = document.createElement('label');
+          var leaderTwo = document.createElement('label');
+          var leaderThree = document.createElement('label');
+            console.log("three");
+            leaderOne.innerHTML="Leader 1 Name:";
+            leaderTwo.innerHTML="Leader 2 Name:";
+            leaderThree.innerHTML="Leader 3 Name:";
+            document.getElementById("moreOptions").appendChild(document.createElement("br"));
+            document.getElementById("moreOptions").appendChild(leaderOne);
+            var inp = document.createElement("input");
+            inp.setAttribute("id", "leader1");
+            document.getElementById("moreOptions").appendChild(inp);
+
+            document.getElementById("moreOptions").appendChild(document.createElement("br"));
+            document.getElementById("moreOptions").appendChild(leaderTwo);
+            var inp2 = document.createElement("input");
+            inp2.setAttribute("id", "leader2");
+            document.getElementById("moreOptions").appendChild(inp2);
+
+            document.getElementById("moreOptions").appendChild(document.createElement("br"));
+            document.getElementById("moreOptions").appendChild(leaderThree);
+            var inp3 = document.createElement("input");
+            inp3.setAttribute("id", "leader3");
+            document.getElementById("moreOptions").appendChild(inp3);
+        }
+}
+
+function meetingFrequency(){
+// same principles as Number of Club Leaders
+  document.getElementById("meetingTime").innerHTML = "";
+    var meeting = document.getElementById("meeting").value;
+  
+    if(meeting == "other"){
+      var diffMeeting = document.createElement('label');
+      console.log("meeting");
+      diffMeeting.innerHTML="Meeting Time: ";
+      document.getElementById("meetingTime").appendChild(document.createElement("br"));
+      document.getElementById("meetingTime").appendChild(diffMeeting);
+      var inpM = document.createElement("input");
+        inpM.setAttribute("id", "inpM");
+            document.getElementById("meetingTime").appendChild(inpM);
+      // .setAtrpute(id)
+  }
+}
+
+</script>
+
+
+  <!-- <label>Club Leader 1:</label><input type="text" id="password">
+ 
+  <br><br/>
+
+  <label>Club Leader 2:</label><input type="text" id="password">
+ 
+  <br><br/> -->
+<!-- 
+  <label for="cars">Add Tags:</label>
+
+  <select name="cars" id="cars">
+    <option value="environment">environment</option>
+    <option value="sports">sports</option>
+    <option value="arts">arts</option>
+    <option value="service">service</option>
+    <option value="in-school">in-school</option>
+    <option value="out-of-school">out-of-school</option>
+    <option value="partner organization">partner organization</option>
+  </select> -->
+
+  <!-- creates tagBox div, allows for individaul styling -->
+    <br><br/>
+  <div class="tagBox">
+  <label for="tags">Tags</label>
+  <!-- data-select-all = false makes it so selecting all the tags is not an option; just wouldn't makes ense in this context; multiple data-multi-select sets the type of html feature to a multi-select dropdown-->
+  <select id="tags" name="tags" data-placeholder="Select Tags" data-select-all="false" multiple data-multi-select>
+    <option value="affinity group">sports</option>
+    <option value="arts">arts</option>
+    <option value="service">service</option>
+    <option value="academics">academics</option>
+    <option value="career-oriented">academics</option>
+
+    <!-- if wanted a preselected attribute/tag: -->
+    <!-- <option value="Cranberry" selected>Cranberry</option> -->
+
+  </select>
+  
+  <br><br/>
+
+   <!-- Links to the club dashboard page and calls onclick function moreInfo(); uses blanks as parameters -->
+   <button id="createButton" onclick="moreInfo()">Create New Club</button>
+  </div>
+  
+  <!-- adds in multiselect javascript; same as css, just better organized to have its own js -->
+  <script src="MultiSelect.js"></script>
 
 </body>
 
