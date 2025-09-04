@@ -104,6 +104,10 @@
       <br><br/>
       <textarea type="text" id="bio" placeholder = "Type Here"></textarea>
       <br><br/>
+    
+      <label>Club Google Drive Link:</label><input type="text" id="driveShareLink" placeholder = "Create a Google Drive folder for your club resources and paste the share link here">
+
+
     </div>
 <script>
     function leaderNumber(){
@@ -231,22 +235,11 @@ function meetingFrequency(){
   <label for="tags">Tags</label>
   <!-- data-select-all = false makes it so selecting all the tags is not an option; just wouldn't makes ense in this context; multiple data-multi-select sets the type of html feature to a multi-select dropdown-->
   <select id="tags" name="tags" data-placeholder="Select Tags" data-select-all="false" multiple data-multi-select>
-    <option value="environment">environment</option>
-    <option value="sports">sports</option>
+    <option value="affinity group">sports</option>
     <option value="arts">arts</option>
     <option value="service">service</option>
-    <option value="in-school">in-school</option>
-    <option value="out-of-school">out-of-school</option>
-    <option value="partner organization">partner organization</option>
-    <option value="tech">tech</option>
-    <option value="science">science</option>
-    <option value="religion">religion</option>
     <option value="academics">academics</option>
-    <option value="volunteer">volunteer</option>  
-    <option value="part-of-year">part-of-year</option>  
-    <option value="full-year">full-year</option>  
-    <option value="food">food</option>  
-    <option value="health">health</option>  
+    <option value="career-oriented">academics</option>
 
     <!-- if wanted a preselected attribute/tag: -->
     <!-- <option value="Cranberry" selected>Cranberry</option> -->
