@@ -58,32 +58,26 @@ export const showClubs = async function () {
 
 
 
-// -- dispays each clubs information after getting selected/clicked in theclub dashboard page --
+// -- displays each club's information after getting selected/clicked in the club dashboard page --
 export const displayClubInfo = async function () {
   console.log("displayClubInfo triggered");
 
-  // gets the club name that was clicked from session storage
   var parentName = sessionStorage.getItem("club");
-
-  // pulling the specific club from database
   const parentDocRef = doc(db, "clubs", parentName);
   const clubDoc = await getDoc(parentDocRef);
 
-  // gets the text in the header to then clear (default is club dash)
   var clubName = document.getElementById("clubName");
   clubName.innerHTML = "";
 
-  // gets the elements to append things to from HTML and sets their text
   var bio = document.getElementById("bio");
-  bio.innerHTML = "<h2 class='underline'>About Us</h2>";
-
   var quickFacts = document.getElementById("quickFacts");
+
+  // set headers with titles
+  bio.innerHTML = "<h2 class='underline'>About Us</h2>";
   quickFacts.innerHTML = "<h2 class='underline'>Club Information</h2>";
 
-  // sets header to the club name
   clubName.innerHTML = clubDoc.data().clubName;
 
-  // sets/creates fields and assigns Firebase values to them
   var clubBio = document.createElement("h4");
   clubBio.innerHTML = clubDoc.data().bio;
 
@@ -99,133 +93,160 @@ export const displayClubInfo = async function () {
   var leaderNames = document.createElement("h4");
   leaderNames.innerHTML = `<strong>Club Leaders:</strong> ${clubDoc.data().clubLeaders.join(", ")}`;
 
-  console.log("read commands");
-
   if (sessionStorage.getItem("canEdit") === "true") {
-  // Create edit controls for bio
-  const bioEditControls = document.createElement("div");
-  const editBioBtn = document.createElement("button");
-  const saveBioBtn = document.createElement("button");
-  const cancelBioBtn = document.createElement("button");
+    // buttons for bio
+    const editBioBtn = document.createElement("button");
+    const saveBioBtn = document.createElement("button");
+    const cancelBioBtn = document.createElement("button");
 
-  editBioBtn.textContent = "Edit";
-  saveBioBtn.textContent = "Save";
-  cancelBioBtn.textContent = "Cancel";
+    editBioBtn.textContent = "Edit";
+    saveBioBtn.textContent = "Save";
+    cancelBioBtn.textContent = "Cancel";
 
-  editBioBtn.classList.add("meetingEdit");
-  saveBioBtn.classList.add("meetingEdit");
-  cancelBioBtn.classList.add("meetingEdit");
+    editBioBtn.classList.add("meetingEdit");
+    saveBioBtn.classList.add("meetingEdit");
+    cancelBioBtn.classList.add("meetingEdit");
 
-  saveBioBtn.style.display = "none";
-  cancelBioBtn.style.display = "none";
+    saveBioBtn.style.display = "none";
+    cancelBioBtn.style.display = "none";
 
-  bioEditControls.appendChild(editBioBtn);
-  bioEditControls.appendChild(saveBioBtn);
-  bioEditControls.appendChild(cancelBioBtn);
-  bio.appendChild(bioEditControls);
+    // put the buttons directly into the h2
+    bio.querySelector("h2").appendChild(editBioBtn);
+    bio.querySelector("h2").appendChild(saveBioBtn);
+    bio.querySelector("h2").appendChild(cancelBioBtn);
 
-  // Create edit controls for quickFacts
-  const quickEditControls = document.createElement("div");
-  const editQuickBtn = document.createElement("button");
-  const saveQuickBtn = document.createElement("button");
-  const cancelQuickBtn = document.createElement("button");
+    // buttons for quick facts
+    const editQuickBtn = document.createElement("button");
+    const saveQuickBtn = document.createElement("button");
+    const cancelQuickBtn = document.createElement("button");
 
-  editQuickBtn.textContent = "Edit";
-  saveQuickBtn.textContent = "Save";
-  cancelQuickBtn.textContent = "Cancel";
+    editQuickBtn.textContent = "Edit";
+    saveQuickBtn.textContent = "Save";
+    cancelQuickBtn.textContent = "Cancel";
 
-  editQuickBtn.classList.add("meetingEdit");
-  saveQuickBtn.classList.add("meetingEdit");
-  cancelQuickBtn.classList.add("meetingEdit");
+    editQuickBtn.classList.add("meetingEdit");
+    saveQuickBtn.classList.add("meetingEdit");
+    cancelQuickBtn.classList.add("meetingEdit");
 
-  saveQuickBtn.style.display = "none";
-  cancelQuickBtn.style.display = "none";
+    saveQuickBtn.style.display = "none";
+    cancelQuickBtn.style.display = "none";
 
-  quickEditControls.appendChild(editQuickBtn);
-  quickEditControls.appendChild(saveQuickBtn);
-  quickEditControls.appendChild(cancelQuickBtn);
-  quickFacts.appendChild(quickEditControls);
+    quickFacts.querySelector("h2").appendChild(editQuickBtn);
+    quickFacts.querySelector("h2").appendChild(saveQuickBtn);
+    quickFacts.querySelector("h2").appendChild(cancelQuickBtn);
 
-  // gettting the values of what needs to be changed/ editted
-  const bioText = clubBio;
-  const yearText = dateFounded;
-  const meetingText = meetingPlan;
-  const memberText = numMembers;
-  const leaderText = leaderNames;
+    // get values to edit
+    const bioText = clubBio;
+    const yearText = dateFounded;
+    const meetingText = meetingPlan;
+    const memberText = numMembers;
+    const leaderText = leaderNames;
 
-  // ---------------- BIO edit stuff----------------
-  editBioBtn.onclick = () => {
-    const input = document.createElement("textarea");
-    input.classList.add("recapEditBox");
-    input.value = bioText.textContent;
-    input.id = "bioInput";
-    bio.replaceChild(input, bioText);
-    editBioBtn.style.display = "none";
-    saveBioBtn.style.display = "inline";
-    cancelBioBtn.style.display = "inline";
-  };
-
-  cancelBioBtn.onclick = () => location.reload();
-
-  saveBioBtn.onclick = async () => {
-    const newBio = document.getElementById("bioInput").value.trim();
-    if (newBio) {
-      await updateDoc(parentDocRef, { bio: newBio });
-      location.reload();
-    }
-  };
-
-  // ---------------- QUICK FACTS ---------------- //
-  editQuickBtn.onclick = () => {
-    const createEditable = (el, id) => {
-      const input = document.createElement("input");
-      input.classList.add("bioEditBox");
-      input.value = el.textContent.split(":")[1]?.trim();
-      input.id = id;
-      return input;
-    };
-    quickFacts.replaceChild(createEditable(yearText, "yearInput"), yearText);
-    quickFacts.replaceChild(createEditable(meetingText, "meetingInput"), meetingText);
-    quickFacts.replaceChild(createEditable(memberText, "memberInput"), memberText);
-    quickFacts.replaceChild(createEditable(leaderText, "leaderInput"), leaderText);
-
-    editQuickBtn.style.display = "none";
-    saveQuickBtn.style.display = "inline";
-    cancelQuickBtn.style.display = "inline";
-  };
-
-  cancelQuickBtn.onclick = () => location.reload();
-
-  saveQuickBtn.onclick = async () => {
-    const newYear = document.getElementById("yearInput").value.trim();
-    const newMeeting = document.getElementById("meetingInput").value.trim();
-    const newMembers = parseInt(document.getElementById("memberInput").value.trim());
-    const newLeaders = document.getElementById("leaderInput").value.trim().split(",").map(s => s.trim());
-
-    if (!isNaN(newMembers) && newYear && newMeeting && newLeaders.length) {
-      await updateDoc(parentDocRef, {
-        yearFounded: newYear,
-        meetingTime: newMeeting,
-        memberCount: newMembers,
-        clubLeaders: newLeaders
-      });
-      location.reload();
-    } else {
-      alert("Please provide valid inputs.");
-    }
-  };
-}
-  var driveButton= document.createElement("a");
+    // create drive button
+  var driveButton = document.createElement("a");
   driveButton.innerHTML = "Club Drive";
-  driveButton.classList.add("driveButton");
+  driveButton.classList.add("driveButton", "clubButton");
   driveButton.id = "clubDrive";
   driveButton.href = clubDoc.data().driveLink;
-  driveButton.target = "_blank"; // Opens in a new tab
+  driveButton.target = "_blank";
   driveButton.style.textDecoration = "none";
 
-  // appends objects to html locations/ objects
+  // append bio content
   bio.appendChild(clubBio);
-  bio.appendChild(driveButton);
+
+  // drive wrapper with line above
+  var driveWrapper = document.createElement("div");
+  driveWrapper.style.display = "flex";
+  driveWrapper.style.justifyContent = "center";
+  driveWrapper.style.marginTop = "15px";
+  driveWrapper.style.paddingTop = "10px";
+  driveWrapper.style.borderTop = "1.5px solid #333";
+  driveWrapper.appendChild(driveButton);
+  bio.appendChild(driveWrapper);
+
+    // bio edit behavior
+    editBioBtn.onclick = () => {
+      // replace bio text with textarea
+      const input = document.createElement("textarea");
+      input.classList.add("recapEditBox");
+      input.value = bioText.textContent;
+      input.id = "bioInput";
+      bio.replaceChild(input, bioText);
+
+      // replace drive link with input box
+      const driveInput = document.createElement("input");
+      driveInput.type = "url";
+      driveInput.classList.add("bioEditBox");
+      driveInput.value = driveButton.href;
+      driveInput.id = "driveInput";
+      bio.replaceChild(driveInput, driveWrapper);
+
+      editBioBtn.style.display = "none";
+      saveBioBtn.style.display = "inline";
+      cancelBioBtn.style.display = "inline";
+    };
+
+    cancelBioBtn.onclick = () => location.reload();
+
+    saveBioBtn.onclick = async () => {
+      const newBio = document.getElementById("bioInput").value.trim();
+      const newDriveLink = document.getElementById("driveInput").value.trim();
+
+      if (newBio && newDriveLink) {
+        await updateDoc(parentDocRef, { 
+          bio: newBio,
+          driveLink: newDriveLink
+        });
+        location.reload();
+      } else {
+        alert("Please provide valid inputs for bio and drive link.");
+      }
+    };
+
+
+    // quick facts edit behavior
+    editQuickBtn.onclick = () => {
+      const createEditable = (el, id) => {
+        const input = document.createElement("input");
+        input.classList.add("bioEditBox");
+        input.value = el.textContent.split(":")[1]?.trim();
+        input.id = id;
+        return input;
+      };
+      quickFacts.replaceChild(createEditable(yearText, "yearInput"), yearText);
+      quickFacts.replaceChild(createEditable(meetingText, "meetingInput"), meetingText);
+      quickFacts.replaceChild(createEditable(memberText, "memberInput"), memberText);
+      quickFacts.replaceChild(createEditable(leaderText, "leaderInput"), leaderText);
+
+      editQuickBtn.style.display = "none";
+      saveQuickBtn.style.display = "inline";
+      cancelQuickBtn.style.display = "inline";
+    };
+
+    cancelQuickBtn.onclick = () => location.reload();
+
+    saveQuickBtn.onclick = async () => {
+      const newYear = document.getElementById("yearInput").value.trim();
+      const newMeeting = document.getElementById("meetingInput").value.trim();
+      const newMembers = parseInt(document.getElementById("memberInput").value.trim());
+      const newLeaders = document.getElementById("leaderInput").value.trim().split(",").map(s => s.trim());
+
+      if (!isNaN(newMembers) && newYear && newMeeting && newLeaders.length) {
+        await updateDoc(parentDocRef, {
+          yearFounded: newYear,
+          meetingTime: newMeeting,
+          memberCount: newMembers,
+          clubLeaders: newLeaders
+        });
+        location.reload();
+      } else {
+        alert("Please provide valid inputs.");
+      }
+    };
+  }
+
+
+  // append quick facts
   quickFacts.appendChild(leaderNames);
   quickFacts.appendChild(dateFounded);
   quickFacts.appendChild(meetingPlan);
@@ -233,7 +254,8 @@ export const displayClubInfo = async function () {
 
   displayMeetingInfo(clubDoc.id);
   return;
-}
+};
+
 
 
 
