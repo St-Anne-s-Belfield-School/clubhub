@@ -101,7 +101,7 @@ export const displayClubInfo = async function () {
 
   // Public link button is always visible
   let publicButton = document.createElement("a");
-  publicButton.innerHTML = "related resources";
+  publicButton.innerHTML = "Related Resources";
   publicButton.classList.add("clubButton");
   publicButton.href = clubDoc.data().publicLink || "#";
   publicButton.target = "_blank";
