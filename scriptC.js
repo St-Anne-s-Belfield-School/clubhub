@@ -144,9 +144,19 @@ function renderCalendar(date) {
     for (let i = firstDay; i > 0; i--) {
         const dayDiv = document.createElement('div');
         const prevMonthDate = prevMonthLastDay - i + 1; // Previous month's date.
-        dayDiv.innerText = prevMonthDate;
         dayDiv.classList.add('actualday');
         dayDiv.classList.add('fade'); // Dim styling for non-current dates.
+
+        // Build day cell structure: number + scrollable events container - so that users can see more than 3 events at once/by scrolling
+        const numberSpan = document.createElement('span');
+        numberSpan.className = 'day-number';
+        numberSpan.textContent = prevMonthDate;
+
+        const eventsWrap = document.createElement('div');
+        eventsWrap.className = 'day-events';
+
+        dayDiv.appendChild(numberSpan);
+        dayDiv.appendChild(eventsWrap);
 
         // Create the correct day string for the previous month (month - 1).
         const dayString = `${month}/${prevMonthDate}/${year}`; // month-1 for previous month
@@ -198,8 +208,9 @@ function renderCalendar(date) {
             //console.log(event);
         });
 
-        // Append the newly created event div to the current day's container (dayDiv)
-        dayDiv.appendChild(eventDiv);
+        // Append the newly created event div to the day's event wrapper
+        const wrap = dayDiv.querySelector('.day-events') || dayDiv;
+        wrap.appendChild(eventDiv);
     });
 
     }
@@ -210,8 +221,18 @@ function renderCalendar(date) {
         const dayString = `${month + 1}/${i}/${year}`;
         //console.log("dayString")
         //console.log(dayString)
-        dayDiv.innerText = i; // Current month's date.
         dayDiv.classList.add('actualday');
+
+        // Build day cell structure: number + scrollable events container
+        const numberSpan = document.createElement('span');
+        numberSpan.className = 'day-number';
+        numberSpan.textContent = i;
+
+        const eventsWrap = document.createElement('div');
+        eventsWrap.className = 'day-events';
+
+        dayDiv.appendChild(numberSpan);
+        dayDiv.appendChild(eventsWrap);
 
         if (i === today.getDate() && month === today.getMonth() && year === today.getFullYear()) {
             dayDiv.classList.add('today'); // Highlight today's date.
@@ -256,7 +277,8 @@ function renderCalendar(date) {
                 // Log the full event object to the console (useful for debugging)
                 //console.log(event);
             });
-            dayDiv.appendChild(eventDiv); // Append the event to the day div
+            const wrapCurrent = dayDiv.querySelector('.day-events') || dayDiv;
+            wrapCurrent.appendChild(eventDiv); // Append the event to the event wrapper
         });
 
         daysContainer.appendChild(dayDiv);
@@ -266,9 +288,19 @@ function renderCalendar(date) {
     const nextMonthStartDay = 7 - new Date(year, month + 1, 1).getDay(); // Correct next month start day calculation
     for (let i = 1; i <= nextMonthStartDay; i++) {
         const dayDiv = document.createElement('div');
-        dayDiv.innerText = i; // Next month's date.
         dayDiv.classList.add('fade'); // Dim styling for non-current dates.
         dayDiv.classList.add('actualday');
+
+        // Build day cell structure: number + scrollable events container
+        const numberSpan = document.createElement('span');
+        numberSpan.className = 'day-number';
+        numberSpan.textContent = i;
+
+        const eventsWrap = document.createElement('div');
+        eventsWrap.className = 'day-events';
+
+        dayDiv.appendChild(numberSpan);
+        dayDiv.appendChild(eventsWrap);
 
         // Create the correct day string for the next month ..
         const dayString = `${month + 2}/${i}/${year}`; // month + 2 for next month
@@ -299,7 +331,8 @@ function renderCalendar(date) {
                 infoModal.style.display = "flex";
                 //console.log(event);
             });
-            dayDiv.appendChild(eventDiv); // Append the event to the day div
+            const wrapNext = dayDiv.querySelector('.day-events') || dayDiv;
+            wrapNext.appendChild(eventDiv); // Append the event to the event wrapper
         });
 
         daysContainer.appendChild(dayDiv);
