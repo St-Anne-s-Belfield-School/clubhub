@@ -432,7 +432,7 @@ resized to fit nicely beside the calendar -- */
 .actualday {
     display: flex;
     flex-direction: column;
-    align-items: center;
+    align-items: stretch; /* let inner wrapper fill width */
     text-align: center;
     padding-top: 1px;
     height: 20%;
@@ -441,6 +441,32 @@ resized to fit nicely beside the calendar -- */
     transition: background-color 0.3s;
     font-size: 17px;
     border-radius: 5px;
+    /* Make the day cell the scroll container so .day-number can stick */
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+
+/* sticky day number at top of each cell */
+.day-number {
+    position: sticky;
+    top: 0;
+    background: transparent; /* inherit by default */
+    padding: 2px 0;
+    z-index: 1;
+}
+
+/* Ensure sticky header matches the cell's theme */
+.actualday .day-number { background: #fff; color: inherit; }
+.actualday.fade .day-number { background: #f7f6f6; color: #666262; }
+.actualday.today .day-number { background: rgb(141, 13, 24); color: #fff; }
+
+/* events stack; let parent handle scrolling */
+.day-events {
+    flex: 1 1 auto;
+    overflow: visible;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
 }
 
 /* Highlights today's date */
