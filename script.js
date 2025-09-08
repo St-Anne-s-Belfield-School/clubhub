@@ -270,39 +270,128 @@ export async function renderAdminClubInfo() {
 
   var adminClub = sessionStorage.getItem('adminClub');
   if (adminClub) {
-    clubInfo.innerHTML="";
+    clubInfo.innerHTML = "";
     const parentDocRef = doc(db, "clubs", adminClub);
     const clubDoc = await getDoc(parentDocRef);
-    
+
     // sets header to the club name
     clubName.innerHTML = clubDoc.data().clubName;
-  
-  var clubUsername = document.createElement("h4");
-  clubUsername.innerHTML =  `<strong>Username:</strong> ${adminClub}`;
 
-  var clubPassword = document.createElement("h4");
-  clubPassword.innerHTML =  `<strong>Password:</strong> ${clubDoc.data().password}`;
+    // builds editable club fields
+    const clubData = clubDoc.data();
 
-  var clubBio = document.createElement("h4");
-  clubBio.innerHTML =  `<strong>Bio:</strong> ${clubDoc.data().bio}`;
+    function addEditableField(container, labelText, fieldKey, value, type) {
+      const wrapper = document.createElement("div");
+      wrapper.className = "editable-field";
 
-  var meetingPlan = document.createElement("h4");
-  meetingPlan.innerHTML = `<strong>Meeting frequency:</strong> ${clubDoc.data().meetingTime}`;
+      const label = document.createElement("strong");
+      label.textContent = labelText + ": ";
+      label.style.marginRight = "6px";
 
-  var numMembers = document.createElement("h4");
-  numMembers.innerHTML = `<strong>Number of members:</strong> ${clubDoc.data().memberCount}`;
+      const valueSpan = document.createElement("span");
+      const displayValue =
+        type === "array" && Array.isArray(value) ? value.join(", ") : (value ?? "");
+      valueSpan.textContent = displayValue;
 
-  var leaderNames = document.createElement("h4");
-  leaderNames.innerHTML = `<strong>Leaders:</strong> ${clubDoc.data().clubLeaders.join(", ")}`;
+      const editBtn = document.createElement("button");
+      editBtn.textContent = "Edit";
+      editBtn.classList.add("meetingEdit");
+      editBtn.style.marginRight = "6px";
+      editBtn.style.fontSize = "9px";
+      editBtn.style.height = "17px";
+      editBtn.style.width = "40px";
+      editBtn.style.borderRadius = "5px";
 
-  // appends created objects to the html
-  clubInfo.appendChild(clubUsername);
-  clubInfo.appendChild(clubPassword);
-  clubInfo.appendChild(leaderNames);
-  clubInfo.appendChild(clubBio);
-  clubInfo.appendChild(meetingPlan);
-  clubInfo.appendChild(numMembers);
+      
 
+      const saveBtn = document.createElement("button");
+      saveBtn.textContent = "Save";
+      saveBtn.classList.add("meetingEdit");
+      saveBtn.style.marginRight = "6px";
+      saveBtn.style.display = "none";
+      saveBtn.style.fontSize = "9px";
+      saveBtn.style.height = "17px";
+      saveBtn.style.width = "40px";
+      saveBtn.style.borderRadius = "5px";
+
+      const cancelBtn = document.createElement("button");
+      cancelBtn.textContent = "Cancel";
+      cancelBtn.classList.add("meetingEdit");
+      cancelBtn.style.marginRight = "6px";
+      cancelBtn.style.display = "none";
+      cancelBtn.style.fontSize = "9px";
+      cancelBtn.style.height = "17px";
+      cancelBtn.style.width = "40px";
+      cancelBtn.style.borderRadius = "5px";
+
+      // put buttons before label and value
+      if (type !== "readonly") {
+        wrapper.appendChild(editBtn);
+        wrapper.appendChild(saveBtn);
+        wrapper.appendChild(cancelBtn);
+      }
+      wrapper.appendChild(label);
+      wrapper.appendChild(valueSpan);
+
+      function enterEditMode() {
+        const input =
+          type === "textarea" ? document.createElement("textarea") : document.createElement("input");
+        if (type === "number") input.type = "number";
+        input.style.marginLeft = "4px";
+        input.value =
+          type === "array" && Array.isArray(value) ? value.join(", ") : (value ?? "");
+
+        // apply styles to inputs
+        if (type === "textarea") {
+          input.classList.add("recapEditBox");
+        } else if (type === "number") {
+          input.classList.add("attendance");
+        } else {
+          input.classList.add("bioEditBox");
+        }
+
+        wrapper.replaceChild(input, valueSpan);
+        editBtn.style.display = "none";
+        saveBtn.style.display = "inline-block";
+        cancelBtn.style.display = "inline-block";
+
+        saveBtn.onclick = async () => {
+          let newVal = input.value;
+          if (type === "number") {
+            newVal = parseInt(newVal, 10);
+            if (isNaN(newVal)) newVal = 0;
+          } else if (type === "array") {
+            newVal = newVal.split(",").map(s => s.trim()).filter(Boolean);
+          }
+
+          try {
+            await updateDoc(doc(db, "clubs", adminClub), { [fieldKey]: newVal });
+            location.reload();
+          } catch (e) {
+            console.error(e);
+            alert("Failed to save. See console for details.");
+          }
+        };
+
+        cancelBtn.onclick = () => {
+          location.reload();
+        };
+      }
+
+      if (type !== "readonly") {
+        editBtn.onclick = enterEditMode;
+      }
+
+      container.appendChild(wrapper);
+    }
+    // add all fields
+    addEditableField(clubInfo, "Username", "username", adminClub, "readonly");
+    addEditableField(clubInfo, "Password", "password", clubData.password, "text");
+    addEditableField(clubInfo, "Leaders", "clubLeaders", clubData.clubLeaders || [], "array");
+    addEditableField(clubInfo, "Bio", "bio", clubData.bio, "textarea");
+    addEditableField(clubInfo, "Meeting frequency", "meetingTime", clubData.meetingTime, "text");
+    addEditableField(clubInfo, "Number of members", "memberCount", clubData.memberCount, "number");
+    addEditableField(clubInfo, "Club Name", "clubName", clubData.clubName, "text");
 
   // —————RIGHT SIDE OF ADMIN CLUB INFO PAGE—————//
   var adminInDangerDiv = document.getElementById("adminInDangerDiv");
@@ -438,23 +527,17 @@ export async function renderAdminClubInfo() {
 
 
 
-export async function deleteClub() {
+export async function deleteClub(){
   const confirmed = confirm("Are you sure you want to delete this club? It will be removed FOREVER!!!");
   const clulbUser = sessionStorage.getItem("adminClub");
-  if (confirmed) {
-    const doubleConfirmed = confirm("Are you 100% sure?");
-    if (doubleConfirmed) {
-      // Delete all documents in the 'all-meetings' subcollection
-      const meetingsColRef = collection(db, "clubs", clulbUser, "all-meetings");
-      const meetingsSnapshot = await getDocs(meetingsColRef);
-      const deletePromises = meetingsSnapshot.docs.map((docSnap) => deleteDoc(docSnap.ref));
-      await Promise.all(deletePromises);
-
-      // Now delete the club document
-      await deleteDoc(doc(db, "clubs", clulbUser));
-      location.reload();
-    }
-  }
+    if (confirmed) {
+      const doubleConfirmed = confirm("Are you 100% sure?");
+  
+      if (doubleConfirmed) {
+        await deleteDoc(doc(db, "clubs", clulbUser));
+        location.reload();
+      };
+  };
 }
 
 export function goToClub(){
