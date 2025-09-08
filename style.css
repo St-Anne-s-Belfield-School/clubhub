@@ -154,6 +154,98 @@ body {
 
 /* --- end of rankingsBox --- */
 
+/* Rankings - cohesive redesign */
+.rankings {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 24px;
+    padding: 24px 2vw;
+    align-items: stretch;
+}
+
+.rankingsBox {
+    margin: 0; /* override old margins */
+    width: auto; /* let grid handle sizing */
+    background: #ffffff;
+    border-radius: 12px;
+    border: 1px solid #efefef;
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
+    overflow: hidden;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+/* Title aligns with your brand colors (Inter + signature red) */
+.rankingTitle {
+    background: rgb(141, 13, 24);
+    color: #ffffff;
+    padding: 16px 20px;
+    font-size: clamp(18px, 2vw, 22px);
+    letter-spacing: 0.3px;
+}
+
+/* Remove old underline, card already has separation */
+.rankingTitle::after {
+    display: none;
+}
+
+/* Remove bottom red line from the box */
+.rankingsBox::after {
+    display: none;
+}
+
+/* Inner list area */
+.topTenList {
+    background: #ffffff;
+    padding: 12px 16px 16px;
+}
+
+.topThree {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 10px 6px;
+    border-bottom: 1px solid #eee;
+    border-radius: 8px;
+}
+
+.topThree:nth-child(odd) {
+    background: #fafafa;
+}
+
+.topThree:last-child {
+    border-bottom: none;
+}
+
+.trophy {
+    width: 28px;
+    height: 28px;
+    max-width: 28px; /* override previous */
+    max-height: 28px; /* override previous */
+    object-fit: contain;
+    opacity: 0.95;
+}
+
+.topThree p {
+    margin: 0;
+    flex: 1;
+    text-align: center;
+    font-weight: 600;
+    font-size: clamp(16px, 1.6vw, 18px);
+    color: #222;
+}
+
+/* Medal colors (override any ID-based colors consistently) */
+.topTenList .topThree:nth-child(1) p { color: #d4af37 !important; } /* gold */
+.topTenList .topThree:nth-child(2) p { color: #aeb2b8 !important; } /* silver */
+.topTenList .topThree:nth-child(3) p { color: #b87333 !important; } /* bronze */
+
+@media (max-width: 768px) {
+    .trophy { width: 24px; height: 24px; }
+    .rankings { gap: 16px; padding: 16px 4vw; }
+}
+
 
 /* this is the overaching flex box for the following ellements
 --- END CALENDAR will mark the end of this! */
@@ -337,12 +429,10 @@ resized to fit nicely beside the calendar -- */
     height: 510px;
     padding-bottom: 5px;
 }
-
 .actualday {
     display: flex;
     flex-direction: column;
     align-items: center;
-    overflow: scroll;
     text-align: center;
     padding-top: 1px;
     height: 20%;
@@ -424,28 +514,95 @@ resized to fit nicely beside the calendar -- */
 
 
 
-/* Meeting info mod (display on click?) */
+/* Event Info Modal (hidden by default; shown via JS setting display:flex) */
 .eventInfoModal {
-    position: fixed;
-    justify-content: center;
-    align-items: center;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.5); /* Darken the background */
-    display: none; /* SHOULD default to =none (hidden) */
-    z-index: 9999; /* Makes modal above all elements */
+  position: fixed;
+  inset: 0;
+  display: none; /* stays hidden until JS sets flex */
+  justify-content: center;
+  align-items: center;
+  padding: 24px;
+  background: rgba(0, 0, 0, 0.38); /* closer to site’s subtle overlay */
+  z-index: 9999;
 }
 
-/* event info  Modal Content */
+/* Event info modal content */
 .eventInfoModalContent {
-    background-color: #fff;
-    border-radius: 10px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-    padding: 75px;
-    width: 300px;
-    text-align: center;
+  background: #ffffff;
+  color: black;
+  border-radius: 10px;
+  border: 2px solid rgb(141, 13, 24); /* site red accent */
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.12);
+  width: min(560px, 94vw);
+  padding: 20px 20px 16px;
+  text-align: left;
+  line-height: 1.4;
+  /* subtle entrance when modal is shown */
+  transform: translateY(4px);
+  opacity: 0;
+  transition: opacity 160ms ease, transform 160ms ease;
+}
+
+/* Header row inside modal (title + optional close) */
+.eventInfoModalContent .modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.eventInfoModalContent .modal-title {
+  font-size: 22px;
+  font-weight: 700;
+  color: #121212;
+  margin: 0;
+}
+
+/* Content rows */
+.eventInfoModalContent .modal-row {
+  display: grid;
+  grid-template-columns: 120px 1fr;
+  gap: 10px 16px;
+  align-items: start;
+}
+
+.eventInfoModalContent .modal-label {
+  color: #666;
+  font-weight: 600;
+}
+
+.eventInfoModalContent .modal-value {
+  color: #121212;
+}
+
+/* Action area */
+.eventInfoModalContent .modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 16px;
+}
+
+/* When the parent is displayed (via inline style), fade/scale in content */
+.eventInfoModal[style*="display: flex"] .eventInfoModalContent {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+}
+
+/* Typography inside the modal */
+.eventInfoModalContent p {
+  margin: 6px 0;
+  font-size: 16px;
+}
+
+#meetInfoPopUp {
+  margin-top: 0;
+  margin-bottom: 8px;
+  font-size: 20px;
+  font-weight: 750;
+  color: black;
+  border-bottom: 2px solid rgb(141, 13, 24); /* match ranking title underline */
+  padding-bottom: 6px;
 }
 
 /* --- END CALENDAR --- */
@@ -464,6 +621,8 @@ resized to fit nicely beside the calendar -- */
   font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
   font-size: 1.4vw; /* smaller font */
   user-select: none;
+  position: relative; /* ensure it doesn’t overlap content */
+  z-index: 0;
 }
 
 .logos {
@@ -534,14 +693,14 @@ resized to fit nicely beside the calendar -- */
   font-family: 'Inter', sans-serif;
   font-size: 25px;
   font-weight: 700;
-  color: black;
+  color: rgb(141, 13, 24);
   text-transform: uppercase;
   letter-spacing: 1px;
   margin-bottom: 30px;
   padding: 5px 0;
-  background-color: #efecec;
-  border-top: 2px solid rgb(141, 13, 24);
-  border-bottom: 2px solid rgb(141, 13, 24);
+  background-color: #ffffff00; 
+  border-top: 2px solid black;
+  border-bottom: 2px solid black;
 }
 
 /* --- Container for All Clubs --- */
@@ -561,7 +720,7 @@ resized to fit nicely beside the calendar -- */
   flex: 1 1 18%;
   min-width: 180px;
   max-width: 220px;
-  background: linear-gradient(145deg, #b31217, #7a0c0f);
+  background: rgb(141, 13, 24);
   font-family: 'Inter', sans-serif;
   font-size: 16px;
   font-weight: 600;
@@ -583,12 +742,7 @@ resized to fit nicely beside the calendar -- */
   left: -150%;
   width: 100%;
   height: 100%;
-  background: linear-gradient(
-    120deg,
-    rgba(255, 255, 255, 0) 0%,
-    rgba(255, 255, 255, 0.4) 50%,
-    rgba(255, 255, 255, 0) 100%
-  );
+  background: rgba(255, 255, 255, 0.18);
   transform: skewX(-20deg);
   z-index: 1;
   pointer-events: none;
@@ -834,6 +988,7 @@ h2 .meetingEdit {
     transition: border-color 0.2s ease, box-shadow 0.2s ease;
     outline: none;
     font-family: 'Inter', sans-serif;
+    border-color: rgba(100, 100, 100, 0.4);
 }
 
 .attendance:focus,
@@ -881,20 +1036,44 @@ h2 .meetingEdit {
   font-family: 'Inter', sans-serif;
 }
 
+/* Cohesive modal buttons (match site palette) */
 .confbtn {
-    background-color: rgb(141, 13, 24); color: white; padding: 10px 20px; margin: 10px;
-    cursor: pointer; border-radius: 10px; font-size: 16px; font-family: 'Inter', sans-serif;
-    border: 1px solid black; box-shadow: 0 2px 4px gray; transition: all 0.2s ease;
+  appearance: none;
+  border: 1px solid rgb(141, 13, 24);
+  background-color: rgb(141, 13, 24);
+  color: white;
+  padding: 10px 16px;
+  margin: 10px 8px 0 0;
+  cursor: pointer;
+  border-radius: 8px;
+  font-size: 15px;
+  font-weight: 600;
+  font-family: 'Inter', sans-serif;
+  transition: background-color 0.18s ease, color 0.18s ease, border-color 0.18s ease;
+}
+
+/* Ensure modal buttons have equal width within the modal */
+.eventInfoModalContent .confbtn {
+  min-width: 160px;   /* same base width */
+  text-align: center; /* center labels */
 }
 
 .confbtn:hover {
-    background-color: white; color: black;
+  background-color: white;
+  color: rgb(141, 13, 24);
 }
+
+/* Secondary (neutral) style for cancel */
 #confCancelDelete {
-    background-color: #8c8c8c;
+  border-color: #8c8c8c;
+  background-color: #8c8c8c;
+  color: white;
 }
+
 #confCancelDelete:hover {
-    background-color: white; color: black;
+  background-color: white;
+  color: #000;
+  border-color: #8c8c8c;
 }
 
 /* Radio Buttons */
@@ -1097,43 +1276,126 @@ option {
 }
 
 .adminLineTwo {
-  background-color: rgb(141, 13, 24); height: 92vh; width: 2px; margin-left: 30px; margin-top: 20px;
+  background-color: rgb(141, 13, 24);
+  width: 2px;
+  margin-left: 30px;
+  margin-top: 20px;
+  align-self: stretch; /* let it match the column height */
 }
 
 
 /* ------ right colum ------ */
 .mainAdminBox {
-    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    display: flex; flex-direction: column; align-items: center; justify-content: flex-start;
     background-color: transparent; border-radius: 4px; padding: 5px;
-    margin: 30px; margin-left: 0; width: 80%; height: 95vh; overflow: hidden;
+    margin: 30px; margin-left: 0; width: 80%; height: auto; overflow: visible;
+    padding-bottom: 40px; /* breathing room above footer */
 }
 
 .adminClubInfoWrapper{
-    height: 78vh; margin: 10px; padding-top: 15px;
+    height: auto; margin: 10px; padding-top: 15px;
     text-align: center; align-items: center; justify-content: center;
     background-color: rgb(255, 255, 255,.75); border-radius: 1px;
 }
 .adminClubInfo {
-  display: flex; flex-direction: row; justify-content: center; margin-top: 20px; gap: 16px;
+  display: grid; grid-template-columns: 1fr; /* start full-width stacked */
+  justify-content: center; margin-top: 20px; gap: 16px;
 }
 
 .adminInfoSplit {
-  display: flex; flex-direction: column; gap: 14px; width: 48%;
+  display: grid; grid-template-columns: 1fr; gap: 14px; width: 100%;
+}
+
+/* On wider screens, allow two-column layout */
+@media (min-width: 1100px) {
+  .adminClubInfo { grid-template-columns: 1fr 1fr; }
+  .adminInfoSplit { width: 100%; }
 }
 
 .adminaboutClub,
 .adminNextMeeting,
 .adminInDangerDiv,
 .adminPastMeetings {
-  background-color: #f3f3f3; border-radius: 8px; padding: 18px;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.1); font-family: "Segoe UI", sans-serif; color: #333;
+  position: relative;
+  background: #ffffff;
+  border: 1px solid #e9e9e9;
+  border-radius: 12px;
+  padding: 18px;
+  padding-top: 60px; /* room for header strip */
+  box-shadow: 0 4px 14px rgba(0,0,0,0.06);
+  color: #222;
+  transition: box-shadow 0.15s ease, transform 0.15s ease;
 }
-/* Scroll styling */
+
+.adminaboutClub:hover,
+.adminNextMeeting:hover,
+.adminInDangerDiv:hover,
+.adminPastMeetings:hover {
+  box-shadow: 0 8px 22px rgba(0,0,0,0.10);
+  transform: translateY(-1px);
+}
+
+/* Header strip via data-title */
+.adminaboutClub::before,
+.adminNextMeeting::before,
+.adminInDangerDiv::before,
+.adminPastMeetings::before {
+  content: attr(data-title);
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  padding: 0 16px;
+  background: #7a0c0f; /* solid brand color, no gradient */
+  color: #fff;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+  border-top-left-radius: 12px;
+  border-top-right-radius: 12px;
+}
+
+/* Body area */
+.adminaboutClub > *,
+.adminNextMeeting > *,
+.adminInDangerDiv > *,
+.adminPastMeetings > * {
+  font-family: 'Inter', sans-serif;
+  line-height: 1.45;
+}
+
+/* Responsive heights: let content define height */
 .adminPastMeetings {
-  height: 40vh; overflow-y: auto;
+  height: auto;
+  max-height: none;
+  overflow-y: visible;
 }
 .adminNextMeeting{
- height: 30vh;
+  height: auto;
+  max-height: none;
+  overflow-y: visible;
+}
+
+/* Custom scrollbar (WebKit) */
+.adminPastMeetings::-webkit-scrollbar,
+.adminNextMeeting::-webkit-scrollbar {
+  width: 10px;
+}
+.adminPastMeetings::-webkit-scrollbar-track,
+.adminNextMeeting::-webkit-scrollbar-track {
+  background: #f3f3f3;
+  border-radius: 10px;
+}
+.adminPastMeetings::-webkit-scrollbar-thumb,
+.adminNextMeeting::-webkit-scrollbar-thumb {
+  background: #c7c7c7;
+  border-radius: 10px;
+}
+.adminPastMeetings::-webkit-scrollbar-thumb:hover,
+.adminNextMeeting::-webkit-scrollbar-thumb:hover {
+  background: #b0b0b0;
 }
 
 /* In-Danger Notice */
@@ -1148,8 +1410,9 @@ option {
 }
 
 .DCB-GCB-Wrapper{
-    display: flex; flex-direction: row; align-items: center; justify-content: space-evenly;
-    margin: -40px; margin-bottom: 20px; padding: 0;  width: 50%;
+    display: flex; flex-direction: row; align-items: center; justify-content: center;
+    gap: 12px; flex-wrap: wrap;
+    margin: 16px 0 24px; padding: 0; width: 100%;
 }
 
 /* Go to club button: transparent bg, black border & text, animated gradient border */
@@ -1357,3 +1620,4 @@ background-color: #eeeeee;
 .searchIcon{
     height: 25px;
 }
+
