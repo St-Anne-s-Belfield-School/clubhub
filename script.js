@@ -1,6 +1,6 @@
 import { getAuth, createUserWithEmailAndPassword, onAuthStateChanged , signInWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-auth.js";
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-app.js";
-import { getFirestore, collection, getDoc, getDocs, doc, updateDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-firestore.js";
+import { getFirestore, collection, getDoc, getDocs, doc, updateDoc, deleteDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-firestore.js";
 const firebaseConfig = {
     apiKey: "AIzaSyAH3oWF9S-ePd0352Ca-TdE5cu6oinzlXo",
     authDomain: "softwareengineering-94854.firebaseapp.com",
@@ -392,6 +392,161 @@ export async function renderAdminClubInfo() {
     addEditableField(clubInfo, "Meeting frequency", "meetingTime", clubData.meetingTime, "text");
     addEditableField(clubInfo, "Number of members", "memberCount", clubData.memberCount, "number");
     addEditableField(clubInfo, "Club Name", "clubName", clubData.clubName, "text");
+
+    // ==== Club Level (with leaderboard migration) ====
+    (function addLevelEditor() {
+      const wrapper = document.createElement("div");
+      wrapper.className = "editable-field";
+
+      const label = document.createElement("strong");
+      label.textContent = "Club Level: ";
+      label.style.marginRight = "6px";
+
+      const valueSpan = document.createElement("span");
+      valueSpan.textContent = clubData.type || "L1";
+
+      const editBtn = document.createElement("button");
+      editBtn.textContent = "Edit";
+      editBtn.classList.add("meetingEdit");
+      editBtn.style.marginRight = "6px";
+      editBtn.style.fontSize = "9px";
+      editBtn.style.height = "17px";
+      editBtn.style.width = "40px";
+      editBtn.style.borderRadius = "5px";
+
+      const saveBtn = document.createElement("button");
+      saveBtn.textContent = "Save";
+      saveBtn.classList.add("meetingEdit");
+      saveBtn.style.marginRight = "6px";
+      saveBtn.style.display = "none";
+      saveBtn.style.fontSize = "9px";
+      saveBtn.style.height = "17px";
+      saveBtn.style.width = "40px";
+      saveBtn.style.borderRadius = "5px";
+
+      const cancelBtn = document.createElement("button");
+      cancelBtn.textContent = "Cancel";
+      cancelBtn.classList.add("meetingEdit");
+      cancelBtn.style.marginRight = "6px";
+      cancelBtn.style.display = "none";
+      cancelBtn.style.fontSize = "9px";
+      cancelBtn.style.height = "17px";
+      cancelBtn.style.width = "40px";
+      cancelBtn.style.borderRadius = "5px";
+
+      wrapper.appendChild(editBtn);
+      wrapper.appendChild(saveBtn);
+      wrapper.appendChild(cancelBtn);
+      wrapper.appendChild(label);
+      wrapper.appendChild(valueSpan);
+
+      const PLACEHOLDER_TEXT = "the next club of this level to have a meeting will be put on this leaderboard";
+
+      const lbIds = (lvl) => ({
+        first: `${lvl}first`,
+        second: `${lvl}second`,
+        third: `${lvl}third`,
+      });
+
+      async function ensureLeaderboardDocs(lvl) {
+        const ids = lbIds(lvl);
+        const refs = [
+          doc(db, "metadata", ids.first),
+          doc(db, "metadata", ids.second),
+          doc(db, "metadata", ids.third),
+        ];
+        const snaps = await Promise.all(refs.map(r => getDoc(r)));
+        const ops = [];
+        if (!snaps[0].exists()) ops.push(setDoc(refs[0], { clubName: PLACEHOLDER_TEXT, points: 0 }));
+        if (!snaps[1].exists()) ops.push(setDoc(refs[1], { clubName: PLACEHOLDER_TEXT, points: 0 }));
+        if (!snaps[2].exists()) ops.push(setDoc(refs[2], { clubName: PLACEHOLDER_TEXT, points: 0 }));
+        if (ops.length) await Promise.all(ops);
+      }
+
+      async function readLeaderboard(lvl) {
+        await ensureLeaderboardDocs(lvl);
+        const ids = lbIds(lvl);
+        const [f, s, t] = await Promise.all([
+          getDoc(doc(db, "metadata", ids.first)),
+          getDoc(doc(db, "metadata", ids.second)),
+          getDoc(doc(db, "metadata", ids.third)),
+        ]);
+        return [f.data(), s.data(), t.data()];
+      }
+
+      async function writeLeaderboard(lvl, arr) {
+        const ids = lbIds(lvl);
+        await updateDoc(doc(db, "metadata", ids.first), { clubName: arr[0].clubName, points: arr[0].points });
+        await updateDoc(doc(db, "metadata", ids.second), { clubName: arr[1].clubName, points: arr[1].points });
+        await updateDoc(doc(db, "metadata", ids.third), { clubName: arr[2].clubName, points: arr[2].points });
+      }
+
+      function placeholderEntry() {
+        return { clubName: PLACEHOLDER_TEXT, points: 0 };
+      }
+
+      async function removeFromLeaderboard(lvl, clubName) {
+        let arr = await readLeaderboard(lvl);
+        // Keep current order, remove club
+        arr = arr.filter(e => (e.clubName || "") !== clubName);
+        // Promote others, fill third with placeholder
+        while (arr.length < 3) arr.push(placeholderEntry());
+        await writeLeaderboard(lvl, arr);
+      }
+
+      async function insertIntoLeaderboard(lvl, clubName, points) {
+        let arr = await readLeaderboard(lvl);
+        // Include real entries only for ranking
+        const real = arr.filter(e => (e.clubName || "") !== PLACEHOLDER_TEXT && (e.clubName || "") !== "");
+        real.push({ clubName, points: points || 0 });
+        real.sort((a, b) => (b.points || 0) - (a.points || 0));
+        // Take top 3 and pad with placeholder
+        let top = real.slice(0, 3);
+        while (top.length < 3) top.push(placeholderEntry());
+        await writeLeaderboard(lvl, top);
+      }
+
+      function enterEditMode() {
+        const select = document.createElement("select");
+        ["L1", "L2", "L3"].forEach(l => {
+          const opt = document.createElement("option");
+          opt.value = l;
+          opt.textContent = l;
+          select.appendChild(opt);
+        });
+        select.value = clubData.type || "L1";
+        select.style.marginLeft = "4px";
+
+        wrapper.replaceChild(select, valueSpan);
+        editBtn.style.display = "none";
+        saveBtn.style.display = "inline-block";
+        cancelBtn.style.display = "inline-block";
+
+        saveBtn.onclick = async () => {
+          const newLevel = select.value;
+          const oldLevel = clubData.type || "L1";
+          try {
+            if (newLevel !== oldLevel) {
+              // Move off old leaderboard, then evaluate for new leaderboard
+              await removeFromLeaderboard(oldLevel, clubData.clubName);
+              await insertIntoLeaderboard(newLevel, clubData.clubName, clubData.points || 0);
+              await updateDoc(doc(db, "clubs", adminClub), { type: newLevel });
+            }
+            location.reload();
+          } catch (e) {
+            console.error(e);
+            alert("Failed to update level. See console for details.");
+          }
+        };
+
+        cancelBtn.onclick = () => {
+          location.reload();
+        };
+      }
+
+      editBtn.onclick = enterEditMode;
+      clubInfo.appendChild(wrapper);
+    })();
 
   // —————RIGHT SIDE OF ADMIN CLUB INFO PAGE—————//
   var adminInDangerDiv = document.getElementById("adminInDangerDiv");
