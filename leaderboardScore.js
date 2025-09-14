@@ -358,4 +358,4 @@ export const loadLeaderboard = async function(){
   var L3Third = document.getElementById("thirdLThree");
   if (L3Third && docSnapThreeThird.exists()) L3Third.innerHTML = docSnapThreeThird.data().clubName;
 
-}
+} 
