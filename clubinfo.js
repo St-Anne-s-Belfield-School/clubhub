@@ -99,14 +99,19 @@ export const displayClubInfo = async function () {
   driveWrapper.style.paddingTop = "10px";
   driveWrapper.style.borderTop = "1.5px solid #333";
 
-  // Public link button is always visible
-  let publicButton = document.createElement("a");
-  publicButton.innerHTML = "Related Resources";
-  publicButton.classList.add("clubButton");
-  publicButton.href = clubDoc.data().publicLink || "#";
-  publicButton.target = "_blank";
-  publicButton.style.textDecoration = "none";
-  driveWrapper.appendChild(publicButton);
+  // Public link button: only show if a link exists
+  const publicLinkValue = (clubDoc.data().publicLink || "").trim();
+  const publicLabelValue = clubDoc.data().publicLinkLabel || "Related Resources";
+  let publicButton;
+  if (publicLinkValue) {
+    publicButton = document.createElement("a");
+    publicButton.innerHTML = publicLabelValue;
+    publicButton.classList.add("clubButton");
+    publicButton.href = publicLinkValue;
+    publicButton.target = "_blank";
+    publicButton.style.textDecoration = "none";
+    driveWrapper.appendChild(publicButton);
+  }
 
   let driveButton;
   if (sessionStorage.getItem("canEdit") === "true") {
@@ -117,7 +122,11 @@ export const displayClubInfo = async function () {
     driveButton.href = clubDoc.data().driveLink;
     driveButton.target = "_blank";
     driveButton.style.textDecoration = "none";
-    driveWrapper.insertBefore(driveButton, publicButton); // Drive left of Public Link
+    if (publicButton) {
+      driveWrapper.insertBefore(driveButton, publicButton); // Drive left of Public Link
+    } else {
+      driveWrapper.appendChild(driveButton);
+    }
 
     // Edit buttons for bio
     const editBioBtn = document.createElement("button");
@@ -184,11 +193,25 @@ export const displayClubInfo = async function () {
       const publicInput = document.createElement("input");
       publicInput.type = "url";
       publicInput.classList.add("bioEditBox");
-      publicInput.value = publicButton.href;
+      publicInput.value = (publicButton && publicButton.href) ? publicButton.href : (publicLinkValue || "");
       publicInput.id = "publicInput";
       publicInput.style.marginBottom = "5px";
       driveWrapper.appendChild(publicLabel);
       driveWrapper.appendChild(publicInput);
+
+      // Public link label (button text) input with helper text
+      const publicTextLabel = document.createElement("label");
+      publicTextLabel.textContent = "Public Link Button Text:";
+      publicTextLabel.htmlFor = "publicTextInput";
+      const publicTextInput = document.createElement("input");
+      publicTextInput.type = "text";
+      publicTextInput.classList.add("bioEditBox");
+      publicTextInput.placeholder = "link a website or google folder you would like others to see when visiting your club page";
+      publicTextInput.value = publicLabelValue;
+      publicTextInput.id = "publicTextInput";
+      publicTextInput.style.marginBottom = "5px";
+      driveWrapper.appendChild(publicTextLabel);
+      driveWrapper.appendChild(publicTextInput);
 
       bio.appendChild(driveWrapper);
 
@@ -203,8 +226,9 @@ export const displayClubInfo = async function () {
       const newBio = document.getElementById("bioInput").value.trim();
       const newDriveLink = driveButton ? document.getElementById("driveInput").value.trim() : null;
       const newPublicLink = document.getElementById("publicInput").value.trim();
+      const newPublicLabel = document.getElementById("publicTextInput").value.trim() || "Related Resources";
 
-      const updateData = { bio: newBio, publicLink: newPublicLink };
+      const updateData = { bio: newBio, publicLink: newPublicLink, publicLinkLabel: newPublicLabel };
       if (driveButton) updateData.driveLink = newDriveLink;
 
       await updateDoc(parentDocRef, updateData);
@@ -661,20 +685,32 @@ async function editMeetingInfo(meetingID, id) {
 // LOTS OF ACOUNT EDITING/ RULES FUNCTIONS
 
 export async function cLogin() {
-  var docRef = doc(db, "clubs", sessionStorage.getItem("club"))
-  var docSnap = await getDoc(docRef)
-  sessionStorage.setItem("canEdit" , "false")
-  if (sessionStorage.getItem("password") == docSnap.data().password){
-    console.log("club login working")
-    location.replace("clubDash.html")
-    sessionStorage.setItem("clubAuth", "true")
-  }else{
-    console.log("wrong username/password")
-    sessionStorage.setItem("clubAuth", "false")
-    alert("Wrong Username or Password");
+  const clubId = sessionStorage.getItem("club");
+  const enteredPassword = sessionStorage.getItem("password");
 
+  const docRef = doc(db, "clubs", clubId);
+  const docSnap = await getDoc(docRef);
+
+  sessionStorage.setItem("canEdit", "false");
+
+  if (docSnap.exists()) {
+    const clubData = docSnap.data();
+    if (enteredPassword === clubData.password) {
+      console.log("club login working");
+      sessionStorage.setItem("clubAuth", "true"); // set before redirect
+      location.replace("clubDash.html");
+    } else {
+      console.log("wrong username/password");
+      sessionStorage.setItem("clubAuth", "false");
+      alert("Wrong Username or Password");
+    }
+  } else {
+    console.log("Club not found");
+    alert("Club not found");
+    sessionStorage.setItem("clubAuth", "false");
   }
 }
+
 
 export async function editVerification() {
   // get the club info from the database
