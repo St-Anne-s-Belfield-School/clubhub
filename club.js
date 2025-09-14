@@ -60,7 +60,7 @@ export const register = async function(user, pass){
   // .catch((error) => {
   //   console.error("Error checking document:", error);
   // });
-// Add a new document in collection "clubs"
+// Add a new document in the collection "clubs"
 
   // await addDoc(collection(db, "clubs", user), {
     
@@ -112,7 +112,7 @@ export const moreInfo = async function(){
     meetingTime = document.getElementById("meeting").value;
   }
 
-//  recieving the username (saved with sessionStorage in register function)
+//receiving the username (saved with sessionStorage in register function)
   await updateDoc(doc(db, "clubs", sessionStorage.getItem("username")), {
     // adding fields:
     clubName: document.getElementById("clubName").value,
@@ -129,8 +129,6 @@ export const moreInfo = async function(){
     lastMeeting: new Date() //KATE ADDED THIS FOR CALCULATING CLUBS IN DANGER!!!
   }
 );
-// each section of this prints correctly into console. selected tags show up as list that updates as new tags added
-// however, only issue is that the clusb thesmelves are not showing up in firebase --> truing to problem solve this next
 
 //changes URL
   sessionStorage.setItem("club", sessionStorage.getItem("username"));
