@@ -68,6 +68,14 @@ export const displayClubInfo = async function () {
   const clubName = document.getElementById("clubName");
   clubName.innerHTML = clubDoc.data().clubName;
 
+  // Handle header background image (per-club override)
+  const headerEl = document.getElementById("header");
+  const headerImage = (clubDoc.data().headerImage || "").trim();
+  if (headerImage) {
+    // Override background image inline when a custom one exists
+    headerEl.style.backgroundImage = `url("${headerImage}")`;
+  }
+
   const bio = document.getElementById("bio");
   const quickFacts = document.getElementById("quickFacts");
 
@@ -776,6 +784,71 @@ export async function editVerification() {
     }
 
     if (isGod === "true" && adminBtn){ adminBtn.style.display = "inline-block";}
+
+    // Add header image edit controls for editors/admins
+    try {
+      const canEdit = sessionStorage.getItem("canEdit") === "true";
+      if (canEdit) {
+        const headerEl = document.getElementById("header");
+        if (headerEl && !document.getElementById("editHeaderControls")) {
+          // wrapper to position over header
+          const controls = document.createElement("div");
+          controls.id = "editHeaderControls";
+          controls.style.position = "absolute";
+          controls.style.top = "10px";
+          controls.style.right = "10px";
+          controls.style.display = "flex";
+          controls.style.gap = "8px";
+          controls.style.zIndex = "2";
+
+          // Ensure header can be a positioning context
+          const prevPos = getComputedStyle(headerEl).position;
+          if (prevPos === "static" || !prevPos) headerEl.style.position = "relative";
+
+          // Simple two-button controls
+          const editBtn = document.createElement("button");
+          editBtn.textContent = "Edit Header Image";
+          editBtn.classList.add("meetingEdit");
+
+          const removeBtn = document.createElement("button");
+          removeBtn.textContent = "Remove Header Image";
+          removeBtn.classList.add("meetingEdit");
+
+          // Edit -> prompt for URL and persist
+          editBtn.onclick = async () => {
+            const url = prompt("Paste image URL (https://...)");
+            if (!url) return;
+            try {
+              await updateDoc(doc(db, "clubs", sessionStorage.getItem("club")), { headerImage: url.trim() });
+              location.reload();
+            } catch (err) {
+              console.error(err);
+              alert("Failed to save header image.");
+            }
+          };
+
+          // Remove -> clear field and revert to default
+          removeBtn.onclick = async () => {
+            try {
+              await updateDoc(doc(db, "clubs", sessionStorage.getItem("club")), { headerImage: "" });
+              headerEl.style.backgroundImage = ""; // CSS default
+              location.reload();
+            } catch (err) {
+              console.error(err);
+              alert("Failed to remove image.");
+            }
+          };
+
+          controls.style.alignItems = "center";
+          controls.style.flexWrap = "wrap";
+          controls.appendChild(editBtn);
+          controls.appendChild(removeBtn);
+          headerEl.appendChild(controls);
+        }
+      }
+    } catch (e) {
+      console.warn("Could not set up header image edit controls", e);
+    }
   } 
   
   else {
