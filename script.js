@@ -1,6 +1,6 @@
 import { getAuth, createUserWithEmailAndPassword, onAuthStateChanged , signInWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-auth.js";
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-app.js";
-import { getFirestore, collection, getDoc, getDocs, doc, updateDoc, deleteDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-firestore.js";
+import { getFirestore, collection, getDoc, getDocs, doc, updateDoc, deleteDoc, setDoc, addDoc } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-firestore.js";
 const firebaseConfig = {
     apiKey: "AIzaSyAH3oWF9S-ePd0352Ca-TdE5cu6oinzlXo",
     authDomain: "softwareengineering-94854.firebaseapp.com",
@@ -13,6 +13,300 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 const auth = getAuth(app);
+
+// ===== Site-wide Announcements =====
+const ANNOUNCEMENTS_COLLECTION = "announcements";
+
+// Show admin controls if logged-in admin (sessionStorage set in checkLogin)
+export function initAnnouncementAdminUI() {
+  const isGod = sessionStorage.getItem("isGod") === "true";
+  const adminActions = document.getElementById("announcementAdminActions");
+  if (adminActions) adminActions.style.display = isGod ? "block" : "none";
+  if (isGod) {
+    // Load log if modal is opened later
+    refreshAnnouncementLog();
+  }
+}
+
+// Modal helpers
+export function openAnnouncementManager() {
+  const modal = document.getElementById("announcementManagerModal");
+  if (modal) {
+    modal.style.display = "block";
+    clearAnnouncementForm();
+    refreshAnnouncementLog();
+  }
+}
+
+export function closeAnnouncementManager() {
+  const modal = document.getElementById("announcementManagerModal");
+  if (modal) modal.style.display = "none";
+}
+
+export function clearAnnouncementForm() {
+  const msg = document.getElementById("announcementMessage");
+  const start = document.getElementById("announcementStart");
+  const end = document.getElementById("announcementEnd");
+  const err = document.getElementById("announcementFormError");
+  if (msg) msg.value = "";
+  if (start) start.value = "";
+  if (end) end.value = "";
+  if (err) { err.style.display = "none"; err.textContent = ""; }
+  // Clear edit id marker
+  sessionStorage.removeItem("editingAnnouncementId");
+}
+
+function normalizeDateToYMD(dateStr) {
+  // Ensure YYYY-MM-DD, day precision only
+  const d = new Date(dateStr + "T00:00:00");
+  if (isNaN(d)) return null;
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${y}-${m}-${day}`;
+}
+
+function todayYMD() {
+  const d = new Date();
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${y}-${m}-${day}`;
+}
+
+async function countActiveAnnouncements(excludeId = null) {
+  const snapshot = await getDocs(collection(db, ANNOUNCEMENTS_COLLECTION));
+  const today = todayYMD();
+  let active = 0;
+  snapshot.forEach(docSnap => {
+    const data = docSnap.data();
+    const id = docSnap.id;
+    const { startDate, endDate, deleted } = data;
+    if (deleted) return;
+    if (excludeId && id === excludeId) return;
+    if (startDate && endDate && startDate <= today && today <= endDate) {
+      active += 1;
+    }
+  });
+  return active;
+}
+
+export async function saveAnnouncement() {
+  const msg = document.getElementById("announcementMessage").value.trim();
+  const startRaw = document.getElementById("announcementStart").value;
+  const endRaw = document.getElementById("announcementEnd").value;
+  const err = document.getElementById("announcementFormError");
+  const editingId = sessionStorage.getItem("editingAnnouncementId") || null;
+
+  const startDate = normalizeDateToYMD(startRaw);
+  const endDate = normalizeDateToYMD(endRaw);
+
+  if (!msg || !startDate || !endDate) {
+    if (err) { err.style.display = "block"; err.textContent = "Please provide message, start date, and end date."; }
+    return;
+  }
+  if (endDate < startDate) {
+    if (err) { err.style.display = "block"; err.textContent = "End date must be on or after the start date."; }
+    return;
+  }
+
+  // Enforce max two active announcements
+  const activeCount = await countActiveAnnouncements(editingId);
+  const today = todayYMD();
+  const willBeActive = (startDate <= today && today <= endDate);
+  if (willBeActive && activeCount >= 2) {
+    if (err) { err.style.display = "block"; err.textContent = "Maximum of two active announcements allowed."; }
+    return;
+  }
+
+  const payload = {
+    message: msg,
+    startDate,
+    endDate,
+    updatedAt: Date.now(),
+    deleted: false
+  };
+
+  if (editingId) {
+    await updateDoc(doc(db, ANNOUNCEMENTS_COLLECTION, editingId), payload);
+  } else {
+    await addDoc(collection(db, ANNOUNCEMENTS_COLLECTION), payload);
+  }
+
+  clearAnnouncementForm();
+  refreshAnnouncementLog();
+  // Re-render banners across pages on next load. If on index, render now.
+  renderActiveAnnouncementBanners();
+}
+
+function statusOfAnnouncement(a, today) {
+  if (a.deleted) return "deleted";
+  if (a.startDate <= today && today <= a.endDate) return "active";
+  if (today < a.startDate) return "upcoming";
+  return "expired";
+}
+
+export async function refreshAnnouncementLog() {
+  const container = document.getElementById("announcementLog");
+  if (!container) return;
+  container.innerHTML = "Loading...";
+  const snapshot = await getDocs(collection(db, ANNOUNCEMENTS_COLLECTION));
+  const today = todayYMD();
+  const items = [];
+  snapshot.forEach(docSnap => {
+    items.push({ id: docSnap.id, ...docSnap.data() });
+  });
+
+  // Sort by status: active, upcoming, expired; then by startDate desc
+  items.sort((a, b) => {
+    const order = { active: 0, upcoming: 1, expired: 2 };
+    const sa = order[statusOfAnnouncement(a, today)] ?? 3;
+    const sb = order[statusOfAnnouncement(b, today)] ?? 3;
+    if (sa !== sb) return sa - sb;
+    return (b.startDate || "").localeCompare(a.startDate || "");
+  });
+
+  container.innerHTML = "";
+  for (const a of items) {
+    const st = statusOfAnnouncement(a, today);
+    const row = document.createElement("div");
+    row.className = `announcement-row status-${st}`;
+
+    const info = document.createElement("div");
+    info.className = "announcement-info";
+    info.innerHTML = `<div class="msg">${a.message || ""}</div>
+      <div class="dates">${a.startDate} → ${a.endDate} • <span class="badge ${st}">${st}</span></div>`;
+
+    const actions = document.createElement("div");
+    actions.className = "announcement-actions";
+
+    const editBtn = document.createElement("button");
+    editBtn.className = "small editAnnouncement";
+    editBtn.textContent = "Edit";
+    editBtn.onclick = () => {
+      sessionStorage.setItem("editingAnnouncementId", a.id);
+      const msgEl = document.getElementById("announcementMessage");
+      const sEl = document.getElementById("announcementStart");
+      const eEl = document.getElementById("announcementEnd");
+      if (msgEl) msgEl.value = a.message || "";
+      if (sEl) sEl.value = a.startDate || "";
+      if (eEl) eEl.value = a.endDate || "";
+      openAnnouncementManager();
+    };
+
+    const reactivateBtn = document.createElement("button");
+    reactivateBtn.className = "small";
+    reactivateBtn.textContent = "Reactivate";
+    reactivateBtn.style.display = (st === "expired" || st === "upcoming") ? "inline-block" : "none";
+    reactivateBtn.onclick = async () => {
+      // Attempt to set start to today if already in the past
+      const newStart = (a.startDate > today) ? a.startDate : today;
+      const newEnd = a.endDate;
+      const willBeActive = (newStart <= today && today <= newEnd);
+      const activeCount = await countActiveAnnouncements(a.id);
+      if (willBeActive && activeCount >= 2) {
+        alert("Cannot reactivate: maximum of two active announcements allowed.");
+        return;
+      }
+      await updateDoc(doc(db, ANNOUNCEMENTS_COLLECTION, a.id), {
+        startDate: newStart,
+        endDate: newEnd,
+        deleted: false,
+        updatedAt: Date.now()
+      });
+      refreshAnnouncementLog();
+      renderActiveAnnouncementBanners();
+    };
+
+    const delBtn = document.createElement("button");
+    delBtn.className = "small danger";
+    delBtn.textContent = "Delete";
+    delBtn.onclick = async () => {
+      if (!confirm("Delete this announcement?")) return;
+      await updateDoc(doc(db, ANNOUNCEMENTS_COLLECTION, a.id), { deleted: true, updatedAt: Date.now() });
+      refreshAnnouncementLog();
+      renderActiveAnnouncementBanners();
+    };
+
+    actions.appendChild(editBtn);
+    actions.appendChild(reactivateBtn);
+    actions.appendChild(delBtn);
+
+    row.appendChild(info);
+    row.appendChild(actions);
+    container.appendChild(row);
+  }
+}
+
+// ===== Banner rendering =====
+function bannerDismissKey(a) {
+  // include updatedAt to re-show if updated, and endDate to ensure reset after expiry
+  return `announcement_dismissed_${a.id}_${a.updatedAt || 0}_${a.endDate}`;
+}
+
+function isDismissed(a) {
+  return sessionStorage.getItem(bannerDismissKey(a)) === "1";
+}
+
+function setDismissed(a) {
+  sessionStorage.setItem(bannerDismissKey(a), "1");
+}
+
+function insertAfterHeader(banner) {
+  const header = document.getElementById("header");
+  if (header && header.parentNode) {
+    header.parentNode.insertBefore(banner, header.nextSibling);
+  } else {
+    document.body.insertBefore(banner, document.body.firstChild);
+  }
+}
+
+export async function renderActiveAnnouncementBanners() {
+  // Clear existing banners
+  document.querySelectorAll('.site-announcement-banner').forEach(n => n.remove());
+
+  const snapshot = await getDocs(collection(db, ANNOUNCEMENTS_COLLECTION));
+  const today = todayYMD();
+  const active = [];
+  snapshot.forEach(docSnap => {
+    const data = docSnap.data();
+    if (data.deleted) return;
+    if (data.startDate && data.endDate && data.startDate <= today && today <= data.endDate) {
+      active.push({ id: docSnap.id, ...data });
+    }
+  });
+
+  // Sort by startDate desc and take at most two
+  active.sort((a, b) => (b.startDate || "").localeCompare(a.startDate || ""));
+  const topTwo = active.slice(0, 2);
+
+  let shown = 0;
+  for (const a of topTwo) {
+    if (isDismissed(a)) continue;
+    const banner = document.createElement('div');
+    banner.className = 'site-announcement-banner';
+    banner.innerHTML = `
+      <div class="banner-content">
+        <div class="banner-text">${a.message}</div>
+        <button class="banner-close" aria-label="Dismiss">✕</button>
+      </div>`;
+
+    banner.querySelector('.banner-close').onclick = () => {
+      setDismissed(a);
+      banner.remove();
+    };
+
+    insertAfterHeader(banner);
+    shown += 1;
+  }
+}
+
+// On load for every page include banners
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', renderActiveAnnouncementBanners);
+} else {
+  renderActiveAnnouncementBanners();
+}
 
 // ——————LOGIN CODE TO VERIFY THE ADMIN IS LOGED IN—————//
 export const login =  function(email, password){
@@ -84,54 +378,62 @@ export const displayClubsInDanger = async function() {
   var clubsInDangerDiv = document.getElementById("clubsInDangerDiv");
   const databaseItems = await getDocs(collection(db, "clubs"));
 
-  
   const todaysDate = new Date();
   // Calculate the date for two months ago
   const twoMonthsAgo = new Date(todaysDate);
   twoMonthsAgo.setMonth(todaysDate.getMonth() - 2);
-  
+
   const clubsInDanger = [];
-  
+
   // Loop through database items to find clubs that haven't met in the last two months
   databaseItems.forEach(club => {
     const data = club.data();
     const lastMeetingTimestamp = data.lastMeeting;
-  
+
     // Convert Firestore Timestamp to JavaScript Date
     const lastMeetingDate = lastMeetingTimestamp.toDate();
-  
+
     if (lastMeetingDate <= twoMonthsAgo) {
       clubsInDanger.push(club);
     }
   });
 
-  // Render clubs in danger in the div
+  // Sort alphabetically by club name
   clubsInDanger.sort((a, b) => {
     const nameA = a.data().clubName.toLowerCase();
     const nameB = b.data().clubName.toLowerCase();
     return nameA.localeCompare(nameB);
   });
-  
+//CLUBBA HUBBA IS SUPREME!!!
   const clubsInDangerButtonsContainer = document.getElementById("clubsInDangerButtonsContainer");
   clubsInDangerButtonsContainer.innerHTML = ""; // Clear old buttons
 
-  clubsInDanger.forEach(club => {
-    const clubInDanger = document.createElement("button");
-    clubInDanger.classList.add("clubsInDangerButton");
+  if (clubsInDanger.length === 0) {
+    // No clubs in danger? Then show this message instead
+    const allActiveMessage = document.createElement("div");
+    allActiveMessage.textContent = "No clubs are curently in danger. All clubs are active!";
+    allActiveMessage.classList.add("allClubsActiveMessage");
+    clubsInDangerButtonsContainer.appendChild(allActiveMessage);
+  } else {
+    // Render clubs in danger as buttons
+    clubsInDanger.forEach(club => {
+      const clubInDanger = document.createElement("button");
+      clubInDanger.classList.add("clubsInDangerButton");
 
-    const span = document.createElement("span");
-    span.innerHTML = club.data().clubName;
+      const span = document.createElement("span");
+      span.innerHTML = club.data().clubName;
 
-    clubInDanger.onclick = function () {
-      sessionStorage.setItem("adminClub", club.data().username);
-      location.reload();
-    };
+      clubInDanger.onclick = function () {
+        sessionStorage.setItem("adminClub", club.data().username);
+        location.reload();
+      };
 
-    clubInDanger.appendChild(span);
-    clubsInDangerButtonsContainer.appendChild(clubInDanger);
-  });
+      clubInDanger.appendChild(span);
+      clubsInDangerButtonsContainer.appendChild(clubInDanger);
+    });
+  }
+};
 
-}
 
 //—————————THIS IS MY SEARCH BAR CODE!!! —————————————//
 // Make an empty list to store all the clubs from the database
