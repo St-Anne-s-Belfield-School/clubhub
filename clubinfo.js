@@ -827,7 +827,7 @@ export async function editVerification() {
             if (!file) return;
             try {
               // For now, support URL paste prompt since project doesn’t include Firebase Storage upload here
-              const useUrl = confirm("Do you want to paste an image URL instead of uploading a file? Click OK for URL, Cancel to proceed with local file path.");
+              const useUrl = confirm("If you want to paste an image URL, click OK. Otherwise, click Cancel to upload an image using a local file path.");
               if (useUrl) {
                 const url = prompt("Paste image URL (https://...)");
                 if (!url) return;
