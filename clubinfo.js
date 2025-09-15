@@ -67,7 +67,7 @@ export const displayClubInfo = async function () {
 
   const clubName = document.getElementById("clubName");
   clubName.innerHTML = clubDoc.data().clubName;
-
+  
   // Handle header background image (per-club override)
   const headerEl = document.getElementById("header");
   const headerImage = (clubDoc.data().headerImage || "").trim();
@@ -805,33 +805,53 @@ export async function editVerification() {
           const prevPos = getComputedStyle(headerEl).position;
           if (prevPos === "static" || !prevPos) headerEl.style.position = "relative";
 
-          // Simple two-button controls
+          // Create buttons
           const editBtn = document.createElement("button");
           editBtn.textContent = "Edit Header Image";
           editBtn.classList.add("meetingEdit");
 
           const removeBtn = document.createElement("button");
-          removeBtn.textContent = "Remove Header Image";
+          removeBtn.textContent = "Remove Image";
           removeBtn.classList.add("meetingEdit");
 
-          // Edit -> prompt for URL and persist
-          editBtn.onclick = async () => {
-            const url = prompt("Paste image URL (https://...)");
-            if (!url) return;
+          // Hidden file input
+          const fileInput = document.createElement("input");
+          fileInput.type = "file";
+          fileInput.accept = "image/*";
+          fileInput.style.display = "none";
+
+          editBtn.onclick = () => fileInput.click();
+
+          fileInput.onchange = async (e) => {
+            const file = e.target.files && e.target.files[0];
+            if (!file) return;
             try {
-              await updateDoc(doc(db, "clubs", sessionStorage.getItem("club")), { headerImage: url.trim() });
-              location.reload();
+              // For now, support URL paste prompt since project doesn’t include Firebase Storage upload here
+              const useUrl = confirm("Do you want to paste an image URL instead of uploading a file? Click OK for URL, Cancel to proceed with local file path.");
+              if (useUrl) {
+                const url = prompt("Paste image URL (https://...)");
+                if (!url) return;
+                await updateDoc(doc(db, "clubs", sessionStorage.getItem("club")), { headerImage: url.trim() });
+                location.reload();
+                return;
+              }
+
+              // Create a temporary object URL to preview immediately (not persisted across reloads)
+              const previewUrl = URL.createObjectURL(file);
+              headerEl.style.backgroundImage = `url("${previewUrl}")`;
+
+              alert("Local file selected. To persist across sessions, please host the image and paste its URL when prompted next time. If you want, we can integrate Firebase Storage upload.");
             } catch (err) {
               console.error(err);
-              alert("Failed to save header image.");
+              alert("Failed to update header image.");
             }
           };
 
-          // Remove -> clear field and revert to default
           removeBtn.onclick = async () => {
             try {
               await updateDoc(doc(db, "clubs", sessionStorage.getItem("club")), { headerImage: "" });
-              headerEl.style.backgroundImage = ""; // CSS default
+              // Revert to default (CSS background)
+              headerEl.style.backgroundImage = "";
               location.reload();
             } catch (err) {
               console.error(err);
@@ -839,17 +859,16 @@ export async function editVerification() {
             }
           };
 
-          controls.style.alignItems = "center";
-          controls.style.flexWrap = "wrap";
           controls.appendChild(editBtn);
           controls.appendChild(removeBtn);
+          controls.appendChild(fileInput);
           headerEl.appendChild(controls);
         }
       }
     } catch (e) {
       console.warn("Could not set up header image edit controls", e);
     }
-  } 
+  }
   
   else {
     // not logged in, show login and hide everything else
