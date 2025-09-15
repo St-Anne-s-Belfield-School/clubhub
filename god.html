@@ -8,7 +8,7 @@
     <script type="module" src="script.js"></script>
     <title>God</title>
     <script type="module">
-        import { checkLogin, displayClubsInDanger, renderAdminClubInfo, logout, resetPoints, deleteClub, goToClub} from './script.js';
+        import { checkLogin, displayClubsInDanger, renderAdminClubInfo, logout, resetPoints, deleteClub, goToClub, initAnnouncementAdminUI, openAnnouncementManager, closeAnnouncementManager, saveAnnouncement, clearAnnouncementForm, refreshAnnouncementLog } from './script.js';
         window.checkLogin = checkLogin;
         window.resetPoints = resetPoints;
         window.displayClubsInDanger = displayClubsInDanger;
@@ -16,9 +16,15 @@
         window.logout = logout;
         window.deleteClub = deleteClub;
         window.goToClub = goToClub;
+        window.openAnnouncementManager = openAnnouncementManager;
+        window.closeAnnouncementManager = closeAnnouncementManager;
+        window.saveAnnouncement = saveAnnouncement;
+        window.clearAnnouncementForm = clearAnnouncementForm;
+        window.refreshAnnouncementLog = refreshAnnouncementLog;
         renderAdminClubInfo();
         checkLogin();
         displayClubsInDanger();
+        initAnnouncementAdminUI();
     </script>
 </head>
 <body>
@@ -37,6 +43,11 @@
     <div class="adminWrap">
 
             <div class="clubsInDangerWrapper">
+                <!-- Admin site-wide announcements -->
+                <div class="announcementAdminActions" id="announcementAdminActions">
+                    <div class="resetPointsText">Site-Wide Announcements</div>
+                    <button class="resetPointsButton" onclick="openAnnouncementManager()"><span>Create Announcement</span></button>
+                </div>
                 <div class="clubsInDanger" id="clubsInDangerDiv">
                     <div class="clubsInDangerTitle">Clubs in Danger!</div>
                     <div class="clubsInDangerButtons" id="clubsInDangerButtonsContainer">
@@ -46,6 +57,45 @@
                 <div class="resetPointsDiv">
                     <div class="resetPointsText">Reset Points for All Clubs</div>
                     <button class="resetPointsButton" onclick="resetPoints()"><span>Reset Points</span></button>
+                </div>
+            </div>
+
+            <!-- Announcement Manager Modal (admin only) -->
+            <div id="announcementManagerModal" class="modal" style="display:none;">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h3>Site-Wide Announcements</h3>
+                        <button class="modal-close" onclick="closeAnnouncementManager()">✕</button>
+                    </div>
+
+                    <div class="modal-section">
+                        <h4>Create or Edit Announcement</h4>
+                        <div class="form-row">
+                            <label for="announcementMessage">Message</label>
+                            <textarea id="announcementMessage" class="input full" rows="3" placeholder="Type announcement message..."></textarea>
+                        </div>
+                        <div class="form-row grid-2">
+                            <div>
+                                <label for="announcementStart">Start date</label>
+                                <input id="announcementStart" type="date" class="input" />
+                            </div>
+                            <div>
+                                <label for="announcementEnd">End date</label>
+                                <input id="announcementEnd" type="date" class="input" />
+                            </div>
+                        </div>
+                        <div class="form-actions">
+                            <button class="primary" id="saveAnnouncementBtn" onclick="saveAnnouncement()">Save Announcement</button>
+                            <button class="secondary" onclick="clearAnnouncementForm()">Clear</button>
+                        </div>
+                        <div id="announcementFormError" class="form-error" style="display:none;"></div>
+                    </div>
+
+                    <div class="modal-section">
+                        <h4 class="anoucementLogTitle">Announcement Log</h4>
+                        <p class="muted">Maximum of 2 active anouncementsat a time.</p>
+                        <div id="announcementLog" class="announcement-log"></div>
+                    </div>
                 </div>
             </div>
 
