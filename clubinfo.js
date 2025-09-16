@@ -67,13 +67,18 @@ export const displayClubInfo = async function () {
 
   const clubName = document.getElementById("clubName");
   clubName.innerHTML = clubDoc.data().clubName;
-  
+
   // Handle header background image (per-club override)
   const headerEl = document.getElementById("header");
   const headerImage = (clubDoc.data().headerImage || "").trim();
   if (headerImage) {
     // Override background image inline when a custom one exists
     headerEl.style.backgroundImage = `url("${headerImage}")`;
+  }
+  // Apply saved header font color if present
+  const headerFontColor = (clubDoc.data().headerFontColor || "").trim();
+  if (headerFontColor) {
+    headerEl.style.color = headerFontColor;
   }
 
   const bio = document.getElementById("bio");
@@ -807,61 +812,101 @@ export async function editVerification() {
 
           // Create buttons
           const editBtn = document.createElement("button");
-          editBtn.textContent = "Edit Header Image";
+          editBtn.textContent = "Edit Header";
           editBtn.classList.add("meetingEdit");
 
           const removeBtn = document.createElement("button");
           removeBtn.textContent = "Remove Image";
           removeBtn.classList.add("meetingEdit");
 
-          // Hidden file input
-          const fileInput = document.createElement("input");
-          fileInput.type = "file";
-          fileInput.accept = "image/*";
-          fileInput.style.display = "none";
+          // Inline panel: URL field + font color + confirm
+          const panel = document.createElement("div");
+          panel.style.display = "none";
+          panel.style.background = "rgba(0,0,0,0.65)";
+          panel.style.padding = "8px";
+          panel.style.borderRadius = "6px";
+          panel.style.backdropFilter = "blur(2px)";
+          panel.style.alignItems = "center";
+          panel.style.gap = "6px";
+          panel.style.color = "#fff";
 
-          editBtn.onclick = () => fileInput.click();
+          const urlInput = document.createElement("input");
+          urlInput.type = "url";
+          urlInput.placeholder = "https://example.com/header.jpg";
+          urlInput.classList.add("bioEditBox");
+          urlInput.style.minWidth = "260px";
 
-          fileInput.onchange = async (e) => {
-            const file = e.target.files && e.target.files[0];
-            if (!file) return;
+          const colorLabel = document.createElement("span");
+          colorLabel.textContent = "Font:";
+          colorLabel.style.marginLeft = "8px";
+
+          const colorSelect = document.createElement("select");
+          colorSelect.classList.add("meetingEdit");
+          const optionMaroon = document.createElement("option");
+          optionMaroon.value = "#7A0019"; // Minnesota maroon
+          optionMaroon.textContent = "Maroon";
+          const optionWhite = document.createElement("option");
+          optionWhite.value = "#FFFFFF";
+          optionWhite.textContent = "White";
+          colorSelect.appendChild(optionMaroon);
+          colorSelect.appendChild(optionWhite);
+
+          // Initialize font selection based on current style
+          try {
+            const currentColor = getComputedStyle(headerEl).color;
+            const approxWhite = /rgb\(\s*255\s*,\s*255\s*,\s*255\s*\)/i.test(currentColor);
+            colorSelect.value = approxWhite ? "#FFFFFF" : "#7A0019";
+          } catch {}
+
+          // Toggle panel
+          editBtn.onclick = () => {
+            panel.style.display = panel.style.display === "none" ? "flex" : "none";
+          };
+
+          // Confirm button to save URL and color
+          const confirmBtn = document.createElement("button");
+          confirmBtn.textContent = "Confirm";
+          confirmBtn.classList.add("meetingEdit");
+          confirmBtn.onclick = async () => {
+            const url = (urlInput.value || "").trim();
+            const chosen = colorSelect.value;
             try {
-              // For now, support URL paste prompt since project doesn’t include Firebase Storage upload here
-              const useUrl = confirm("If you want to paste an image URL, click OK. Otherwise, click Cancel to upload an image using a local file path.");
-              if (useUrl) {
-                const url = prompt("Paste image URL (https://...)");
-                if (!url) return;
-                await updateDoc(doc(db, "clubs", sessionStorage.getItem("club")), { headerImage: url.trim() });
-                location.reload();
-                return;
-              }
-
-              // Create a temporary object URL to preview immediately (not persisted across reloads)
-              const previewUrl = URL.createObjectURL(file);
-              headerEl.style.backgroundImage = `url("${previewUrl}")`;
-
-              alert("Local file selected. To persist across sessions, please host the image and paste its URL when prompted next time. If you want, we can integrate Firebase Storage upload.");
+              await updateDoc(
+                doc(db, "clubs", sessionStorage.getItem("club")),
+                { headerImage: url, headerFontColor: chosen }
+              );
+              // Apply immediately and collapse
+              headerEl.style.backgroundImage = url ? `url("${url}")` : "";
+              headerEl.style.color = chosen;
+              panel.style.display = "none";
             } catch (err) {
               console.error(err);
-              alert("Failed to update header image.");
+              alert("Failed to save header settings.");
             }
           };
 
+          // Remove image behavior
           removeBtn.onclick = async () => {
             try {
               await updateDoc(doc(db, "clubs", sessionStorage.getItem("club")), { headerImage: "" });
               // Revert to default (CSS background)
               headerEl.style.backgroundImage = "";
-              location.reload();
+              panel.style.display = "none";
             } catch (err) {
               console.error(err);
               alert("Failed to remove image.");
             }
           };
 
+          // Assemble controls
+          panel.appendChild(urlInput);
+          panel.appendChild(colorLabel);
+          panel.appendChild(colorSelect);
+          panel.appendChild(confirmBtn);
+
           controls.appendChild(editBtn);
           controls.appendChild(removeBtn);
-          controls.appendChild(fileInput);
+          controls.appendChild(panel);
           headerEl.appendChild(controls);
         }
       }
