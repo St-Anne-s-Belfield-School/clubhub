@@ -17,17 +17,6 @@ const auth = getAuth(app);
 // ===== Site-wide Announcements =====
 const ANNOUNCEMENTS_COLLECTION = "announcements";
 
-// Show admin controls if logged-in admin (sessionStorage set in checkLogin)
-export function initAnnouncementAdminUI() {
-  const isGod = sessionStorage.getItem("isGod") === "true";
-  const adminActions = document.getElementById("announcementAdminActions");
-  if (adminActions) adminActions.style.display = isGod ? "block" : "none";
-  if (isGod) {
-    // Load log if modal is opened later
-    refreshAnnouncementLog();
-  }
-}
-
 // Modal helpers
 export function openAnnouncementManager() {
   const modal = document.getElementById("announcementManagerModal");
