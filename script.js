@@ -434,11 +434,16 @@ export const createClubList = async function () {
   const names = document.getElementById("clubs");
   if (names) names.innerHTML = ""; // If there's a "clubs" element, clear whatever was in it
 
-  // Loop through all the club data we got from Firestore
+  // Reset and loop through all the club data we got from Firestore
+  clubList = [];
   databaseItems.forEach((item) => {
-    const clubName = item.data().clubName;
-    const clubUsername = item.data().username;  // Get the username from Firestore
-    clubList.push({ clubName, clubUsername });      // Store as object with both values
+    const data = item.data();
+    const clubName = data?.clubName || "";
+    // Use document ID as the stable identifier (matches usage elsewhere like clubsInDanger)
+    const clubUsername = item.id;
+    if (clubName) {
+      clubList.push({ clubName, clubUsername });
+    }
   });
 };
 
@@ -513,19 +518,34 @@ class InstantSearch {
 
   createResultElement(result) {
     const anchor = document.createElement("a");
-    anchor.classList.add("instant-search__result");  
+    anchor.classList.add("instant-search__result");
+    anchor.href = "#";
     anchor.innerHTML = this.options.templateFunction(result);
-  
+
     anchor.addEventListener("click", (event) => {
-      event.preventDefault(); // Prevent default link behavior
-      
-      // Save the club username to session storage
-      // Assuming 'result' has a property 'clubUsername' holding that value
+      event.preventDefault();
+      // Save the selected club ID and render immediately (no full reload needed)
       sessionStorage.setItem('adminClub', result.clubUsername);
-      // Reload the current page
-      location.reload();
+      try {
+        // Update input to selected value and hide results
+        if (this.elements?.input) this.elements.input.value = result.clubName;
+        if (this.elements?.resultsContainer) {
+          this.elements.resultsContainer.classList.remove("instant-search__results-container--visible");
+          this.elements.resultsContainer.innerHTML = "";
+        }
+        // Render the admin panel for the selected club
+        if (typeof renderAdminClubInfo === "function") {
+          renderAdminClubInfo();
+        } else {
+          // Fallback: light reload if function not in scope for some reason
+          location.reload();
+        }
+      } catch (e) {
+        console.error(e);
+        location.reload();
+      }
     });
-  
+
     return anchor;
   }
   
@@ -551,22 +571,27 @@ createClubList().then(() => {
   }
 });
 
-// ———— decided to make the admin club info box an onload 
-// function cause im not going to push my luck ——————///
 
 export async function renderAdminClubInfo() {
-  var clubName = document.getElementById("adminClubName");
-  clubName.innerHTML = "";
-  var clubInfo = document.getElementById("adminaboutClub");
+  // Ensure DOM is ready before manipulating elements
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', renderAdminClubInfo, { once: true });
+    return;
+  }
 
-  var adminClub = sessionStorage.getItem('adminClub');
+  const clubNameEl = document.getElementById("adminClubName");
+  const clubInfo = document.getElementById("adminaboutClub");
+  if (!clubNameEl || !clubInfo) return;
+  clubNameEl.innerHTML = "";
+
+  const adminClub = sessionStorage.getItem('adminClub');
   if (adminClub) {
     clubInfo.innerHTML = "";
     const parentDocRef = doc(db, "clubs", adminClub);
     const clubDoc = await getDoc(parentDocRef);
 
     // sets header to the club name
-    clubName.innerHTML = clubDoc.data().clubName;
+    clubNameEl.innerHTML = clubDoc.data().clubName;
 
     // builds editable club fields
     const clubData = clubDoc.data();
