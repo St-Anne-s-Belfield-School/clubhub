@@ -91,9 +91,6 @@ export const displayClubInfo = async function () {
   const clubBio = document.createElement("h4");
   clubBio.textContent = clubDoc.data().bio;
 
-  const dateFounded = document.createElement("h4");
-  dateFounded.innerHTML = `<strong>Date founded:</strong> ${clubDoc.data().yearFounded}`;
-
   const meetingPlan = document.createElement("h4");
   meetingPlan.innerHTML = `<strong>Meeting frequency:</strong> ${clubDoc.data().meetingTime}`;
 
@@ -102,6 +99,13 @@ export const displayClubInfo = async function () {
 
   const leaderNames = document.createElement("h4");
   leaderNames.innerHTML = `<strong>Club Leaders:</strong> ${clubDoc.data().clubLeaders.join(", ")}`;
+
+  const facultyAdvisor = document.createElement("h4");
+  facultyAdvisor.innerHTML = `<strong>Faculty advisor:</strong> ${(clubDoc.data().facultyAdvisor || "")}`;
+
+  const contactEmails = document.createElement("h4");
+  const contactsArr = Array.isArray(clubDoc.data().contactEmails) ? clubDoc.data().contactEmails : [];
+  contactEmails.innerHTML = `<strong>Contact emails:</strong> ${contactsArr.join(", ")}`;
 
   // create drive and public link buttons wrapper
   const driveWrapper = document.createElement("div");
@@ -249,38 +253,65 @@ export const displayClubInfo = async function () {
     };
 
     // Quick facts edit behavior
-    editQuickBtn.onclick = () => {
-      const createEditable = (el, id) => {
-        const input = document.createElement("input");
-        input.classList.add("bioEditBox");
-        input.value = el.textContent.split(":")[1]?.trim();
-        input.id = id;
-        return input;
-      };
-      quickFacts.replaceChild(createEditable(dateFounded, "yearInput"), dateFounded);
-      quickFacts.replaceChild(createEditable(meetingPlan, "meetingInput"), meetingPlan);
-      quickFacts.replaceChild(createEditable(numMembers, "memberInput"), numMembers);
-      quickFacts.replaceChild(createEditable(leaderNames, "leaderInput"), leaderNames);
+editQuickBtn.onclick = () => {
+  const createEditable = (el, id) => {
+    const input = document.createElement("input");
+    input.classList.add("bioEditBox");
+    input.value = el.textContent.split(":")[1]?.trim();
+    input.id = id;
+    return input;
+  };
 
-      editQuickBtn.style.display = "none";
-      saveQuickBtn.style.display = "inline";
-      cancelQuickBtn.style.display = "inline";
-    };
+  const createHeader = (text) => {
+    const header = document.createElement("div");
+    header.textContent = `${text}:`;
+    header.style.fontSize = "12px";
+    header.style.fontWeight = "bold";
+    header.style.color = "#666";
+    header.style.backgroundColor = "#f5f5f5";
+    header.style.padding = "2px 6px";
+    header.style.borderRadius = "3px";
+    header.style.marginBottom = "3px";
+    return header;
+  };
+
+  // Replace with inputs and add headers before each
+  meetingPlan.parentNode.insertBefore(createHeader("Meeting Plan"), meetingPlan);
+  quickFacts.replaceChild(createEditable(meetingPlan, "meetingInput"), meetingPlan);
+  
+  numMembers.parentNode.insertBefore(createHeader("Number of Members"), numMembers);
+  quickFacts.replaceChild(createEditable(numMembers, "memberInput"), numMembers);
+  
+  leaderNames.parentNode.insertBefore(createHeader("Leader Names"), leaderNames);
+  quickFacts.replaceChild(createEditable(leaderNames, "leaderInput"), leaderNames);
+  
+  facultyAdvisor.parentNode.insertBefore(createHeader("Faculty Advisor"), facultyAdvisor);
+  quickFacts.replaceChild(createEditable(facultyAdvisor, "advisorInput"), facultyAdvisor);
+  
+  contactEmails.parentNode.insertBefore(createHeader("Contact Emails"), contactEmails);
+  quickFacts.replaceChild(createEditable(contactEmails, "contactsInput"), contactEmails);
+
+  editQuickBtn.style.display = "none";
+  saveQuickBtn.style.display = "inline";
+  cancelQuickBtn.style.display = "inline";
+};
 
     cancelQuickBtn.onclick = () => location.reload();
 
     saveQuickBtn.onclick = async () => {
-      const newYear = document.getElementById("yearInput").value.trim();
       const newMeeting = document.getElementById("meetingInput").value.trim();
       const newMembers = parseInt(document.getElementById("memberInput").value.trim());
-      const newLeaders = document.getElementById("leaderInput").value.trim().split(",").map(s => s.trim());
+      const newLeaders = document.getElementById("leaderInput").value.trim().split(",").map(s => s.trim()).filter(Boolean);
+      const newAdvisor = document.getElementById("advisorInput").value.trim();
+      const newContacts = document.getElementById("contactsInput").value.trim().split(",").map(s => s.trim()).filter(Boolean);
 
-      if (!isNaN(newMembers) && newYear && newMeeting && newLeaders.length) {
+      if (!isNaN(newMembers) && newMeeting) {
         await updateDoc(parentDocRef, {
-          yearFounded: newYear,
           meetingTime: newMeeting,
           memberCount: newMembers,
-          clubLeaders: newLeaders
+          clubLeaders: newLeaders,
+          facultyAdvisor: newAdvisor,
+          contactEmails: newContacts
         });
         location.reload();
       } else {
@@ -294,7 +325,8 @@ export const displayClubInfo = async function () {
   bio.appendChild(driveWrapper);
 
   quickFacts.appendChild(leaderNames);
-  quickFacts.appendChild(dateFounded);
+  quickFacts.appendChild(facultyAdvisor);
+  quickFacts.appendChild(contactEmails);
   quickFacts.appendChild(meetingPlan);
   quickFacts.appendChild(numMembers);
 
