@@ -60,7 +60,7 @@ export const register = async function(user, pass){
   // .catch((error) => {
   //   console.error("Error checking document:", error);
   // });
-// Add a new document in the collection "clubs"
+// Add a new document in collection "clubs"
 
   // await addDoc(collection(db, "clubs", user), {
     
@@ -90,17 +90,24 @@ export const moreInfo = async function(){
 
   // adds leaders to "leaderList" depending on which dropdown chosen/generated
   var leaderList = [];
+  var contactList = [];
   if (document.getElementById("number").value == "one"){
-    leaderList.push(document.getElementById("leader1").value)
+    leaderList.push(document.getElementById("leader1").value);
+    contactList.push(document.getElementById("email1").value || "");
   }
   else if (document.getElementById("number").value == "two"){
     leaderList.push(document.getElementById("leader1").value);
+    contactList.push(document.getElementById("email1").value || "");
     leaderList.push(document.getElementById("leader2").value);
+    contactList.push(document.getElementById("email2").value || "");
   }
   else if (document.getElementById("number").value == "three"){
     leaderList.push(document.getElementById("leader1").value);
+    contactList.push(document.getElementById("email1").value || "");
     leaderList.push(document.getElementById("leader2").value);
+    contactList.push(document.getElementById("email2").value || "");
     leaderList.push(document.getElementById("leader3").value);
+    contactList.push(document.getElementById("email3").value || "");
   }
 
   // adds meetingTime to meetingTime depending on whether dropdown selection or "other" selectiojn
@@ -112,7 +119,7 @@ export const moreInfo = async function(){
     meetingTime = document.getElementById("meeting").value;
   }
 
-//receiving the username (saved with sessionStorage in register function)
+//  recieving the username (saved with sessionStorage in register function)
   await updateDoc(doc(db, "clubs", sessionStorage.getItem("username")), {
     // adding fields:
     clubName: document.getElementById("clubName").value,
@@ -123,12 +130,15 @@ export const moreInfo = async function(){
     // parses it into list instead of string; from sessionStorage from MultiSelect.js page
     tags: JSON.parse(sessionStorage.getItem("tags")),
     memberCount: document.getElementById("memberCount").value,
-    yearFounded: document.getElementById("yearFounded").value,
+    facultyAdvisor: document.getElementById("facultyAdvisor")?.value || "",
+    contactEmails: contactList,
     bio: document.getElementById("bio").value,
     points: 0,
     lastMeeting: new Date() //KATE ADDED THIS FOR CALCULATING CLUBS IN DANGER!!!
   }
 );
+// each section of this prints correctly into console. selected tags show up as list that updates as new tags added
+// however, only issue is that the clusb thesmelves are not showing up in firebase --> truing to problem solve this next
 
 //changes URL
   sessionStorage.setItem("club", sessionStorage.getItem("username"));
