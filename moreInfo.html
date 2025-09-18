@@ -95,9 +95,9 @@
 
       <br><br/>
 
-      <!-- same placeholder option here -->
-    <label>Year Founded:</label><input type="text" id="yearFounded" placeholder = "Type Here">
-     
+      <!-- faculty advisor input -->
+      <label>Faculty Advisor:</label><input type="text" id="facultyAdvisor" placeholder = "Type Here">
+      
       <br><br/>
 
       <label>Bio:</label>
@@ -138,6 +138,12 @@
             var inp = document.createElement("input");
             inp.setAttribute("id", "leader1");
             document.getElementById("moreOptions").appendChild(inp);
+            var email1Label = document.createElement('label');
+            email1Label.innerHTML = "Contact Email:";
+            var email1 = document.createElement('input');
+            email1.setAttribute('id', 'email1');
+            document.getElementById("moreOptions").appendChild(email1Label);
+            document.getElementById("moreOptions").appendChild(email1);
             // .setAtrpute(id)
         }
         // if number = 2, populate 2 blanks for the leaders name below
@@ -152,12 +158,24 @@
             var inp = document.createElement("input");
             inp.setAttribute("id", "leader1");
             document.getElementById("moreOptions").appendChild(inp);
+            var email1Label = document.createElement('label');
+            email1Label.innerHTML = "Contact Email:";
+            var email1 = document.createElement('input');
+            email1.setAttribute('id', 'email1');
+            document.getElementById("moreOptions").appendChild(email1Label);
+            document.getElementById("moreOptions").appendChild(email1);
 
             document.getElementById("moreOptions").appendChild(document.createElement("br"));
             document.getElementById("moreOptions").appendChild(leaderTwo);
             var inp2 = document.createElement("input");
             inp2.setAttribute("id", "leader2");
             document.getElementById("moreOptions").appendChild(inp2);
+            var email2Label = document.createElement('label');
+            email2Label.innerHTML = "Contact Email:";
+            var email2 = document.createElement('input');
+            email2.setAttribute('id', 'email2');
+            document.getElementById("moreOptions").appendChild(email2Label);
+            document.getElementById("moreOptions").appendChild(email2);
         }
         // if number = 3, populate 3 blanks for the leader names below
         else if(number == "three"){
@@ -173,18 +191,36 @@
             var inp = document.createElement("input");
             inp.setAttribute("id", "leader1");
             document.getElementById("moreOptions").appendChild(inp);
+            var email1Label = document.createElement('label');
+            email1Label.innerHTML = "Contact Email:";
+            var email1 = document.createElement('input');
+            email1.setAttribute('id', 'email1');
+            document.getElementById("moreOptions").appendChild(email1Label);
+            document.getElementById("moreOptions").appendChild(email1);
 
             document.getElementById("moreOptions").appendChild(document.createElement("br"));
             document.getElementById("moreOptions").appendChild(leaderTwo);
             var inp2 = document.createElement("input");
             inp2.setAttribute("id", "leader2");
             document.getElementById("moreOptions").appendChild(inp2);
+            var email2Label = document.createElement('label');
+            email2Label.innerHTML = "Contact Email:";
+            var email2 = document.createElement('input');
+            email2.setAttribute('id', 'email2');
+            document.getElementById("moreOptions").appendChild(email2Label);
+            document.getElementById("moreOptions").appendChild(email2);
 
             document.getElementById("moreOptions").appendChild(document.createElement("br"));
             document.getElementById("moreOptions").appendChild(leaderThree);
             var inp3 = document.createElement("input");
             inp3.setAttribute("id", "leader3");
             document.getElementById("moreOptions").appendChild(inp3);
+            var email3Label = document.createElement('label');
+            email3Label.innerHTML = "Contact Email:";
+            var email3 = document.createElement('input');
+            email3.setAttribute('id', 'email3');
+            document.getElementById("moreOptions").appendChild(email3Label);
+            document.getElementById("moreOptions").appendChild(email3);
         }
 }
 
