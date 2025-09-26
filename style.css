@@ -443,6 +443,9 @@ resized to fit nicely beside the calendar -- */
     /* Make the day cell the scroll container so .day-number can stick */
     overflow-y: auto;
     overflow-x: hidden;
+    /*  border */
+    border: 2px solid rgba(42, 0, 0, 0.151);  
+    box-sizing: border-box;  /* keep widths consistent */
 }
 
 /* sticky day number at top of each cell */
@@ -1251,15 +1254,14 @@ option {
 
 /* ------------  ADMIN PAGE --------------*/
 /* ===== Site-wide announcement banners (homepage) ===== */
-/* ===== Site-wide announcement banners (homepage) ===== */
 .site-announcement-banner {
-  background: rgba(255, 255, 255, 0.92);
+  background: rgba(255, 255, 255, 0.974);
   border: 2px solid #000;
   border-radius: 10px;
-  padding: 16px 20px;
+  padding: 24px 30px;
   max-width: 800px;
   position: fixed;          /* <— fixed so it hovers */
-  top: 100px;               /* below header */
+  top: 300px;               /* below header */
   left: 50%;
   transform: translateX(-50%);
   z-index: 1000;            /* make sure it floats above other stuff */
@@ -1300,30 +1302,34 @@ option {
   to   { opacity: 1; transform: translate(-50%, 0); }
 }
 
-/* ===== Announcement Modals (admin page) ===== */
-.announcement-modal {
-  display: none; /* default hidden */
+/* ===== Announcement Modals (Admin Page) ===== */
+.announcement-modal,
+.announcement-log {
+  display: none; /* hidden by default */
   position: fixed;
-  z-index: 2000;               /* higher than banners */
-  left: 0;
-  top: 0;
-  width: 100%;
-  height: 100%;
+  z-index: 2001; /* keep above all content */
+  left: 0; top: 0; width: 100%; height: 100%;
+  background-color: rgba(0, 0, 0, 0.55); /* dimmed background */
   overflow: auto;
-  background-color: rgba(0, 0, 0, 0.557); /* dimmed background */
+  font-family: 'Inter', sans-serif; 
 }
 
+/* Modal content box */
 .announcement-modal-content {
-  background: #fff;
-  margin: 8% auto;
-  padding: 20px;
-  border: 2px solid #000;
+  background: rgba(255, 255, 255, 0.9); 
+  backdrop-filter: blur(12px);
+  margin: 6% auto;
+  padding: 24px;
+  border: 2px solid #7a0c0f; 
   border-radius: 12px;
   width: 90%;
   max-width: 600px;
   animation: scaleIn 0.25s ease-out;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+  font-family: 'Inter', sans-serif; 
 }
 
+/* Animation */
 @keyframes scaleIn {
   from { transform: scale(0.9); opacity: 0; }
   to   { transform: scale(1); opacity: 1; }
@@ -1331,16 +1337,194 @@ option {
 
 /* Buttons inside modals */
 .announcement-buttons {
-  margin-top: 16px;
+  margin-top: 20px;
   display: flex;
-  gap: 12px;
-  justify-content: flex-end;
+  gap: 14px;
+  justify-content: center;
 }
 
 .announcement-buttons button {
-  padding: 6px 12px;
+  padding: 10px 16px;
+  font-size: 15px;
+  font-weight: 700;
   border-radius: 6px;
   cursor: pointer;
+  background: transparent;
+  border: 2px solid #7a0c0f;
+  color: #7a0c0f;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  transition: all 0.3s ease;
+  font-family: 'Inter', sans-serif;
+}
+
+/* Hover  */
+.announcement-buttons button:hover {
+  background-color: #7a0c0f;
+  color: #fff;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+/* Inputs and textareas inside announcement modals */
+.announcement-modal-content input,
+.announcement-modal-content textarea {
+  font-family: 'Inter', sans-serif;
+  font-size: 15px;
+  padding: 8px 10px;
+  border: 2px solid #ccc;
+  border-radius: 6px;
+  width: 100%;
+  margin-bottom: 12px;
+  transition: border-color 0.25s ease, box-shadow 0.25s ease;
+}
+
+/* clicked/focus state: maroon border + glow */
+.announcement-modal-content input:focus,
+.announcement-modal-content textarea:focus {
+  outline: none;
+  border-color: #7a0c0f;
+  box-shadow: 0 0 0 3px rgba(122, 12, 15, 0.35);
+}
+
+/* Announcement Log on admin page! */
+/* ===== Announcement Log Modal — cohesive buttons & layout ===== */
+
+/* Keep it scoped to the log modal so it won't leak */
+#announcementLogModal {
+  font-family: 'Inter', sans-serif;
+}
+
+/* Card already styled — this just ensures a neat list layout */
+#announcementLogList {
+  display: grid;
+  gap: 12px;
+  margin-top: 12px;
+}
+
+#announcementLogList .announcement-log-item {
+  background: #fff;
+  border: 1px solid #e9e9e9;
+  border-radius: 12px;
+  padding: 14px 16px;
+  box-shadow: 0 3px 8px rgba(0,0,0,0.06);
+  transition: box-shadow .15s ease, transform .15s ease;
+}
+#announcementLogList .announcement-log-item:hover {
+  box-shadow: 0 5px 12px rgba(0,0,0,0.1);
+  transform: translateY(-1px);
+}
+
+/* Typography for the two info lines */
+#announcementLogList .announcement-log-item > div:nth-of-type(1),
+#announcementLogList .announcement-log-item > div:nth-of-type(2) {
+  font-size: 14px;
+  color: #333;
+  margin: 6px 0;
+}
+
+/* Status badge */
+#announcementLogList .announcement-log-item .badge {
+  display: inline-block;
+  margin-left: 8px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: capitalize;
+  background: #f3f3f3;
+  color: #333;
+  border: 1px solid #cfcfcf;
+}
+#announcementLogList .announcement-log-item .badge.active   { background:#22a06b; color:#fff; border-color:#22a06b; }
+#announcementLogList .announcement-log-item .badge.upcoming { background:#2b7de9; color:#fff; border-color:#2b7de9; }
+#announcementLogList .announcement-log-item .badge.expired  { background:#9e9e9e; color:#fff; border-color:#9e9e9e; }
+#announcementLogList .announcement-log-item .badge.deleted  { background:#d12323; color:#fff; border-color:#d12323; }
+
+/* Actions row
+   Prefer a class on the container: .announcement-actions
+   Fallback (last-child) included so it still works if you don't add the class. */
+#announcementLogList .announcement-actions,
+#announcementLogList .announcement-log-item > div:last-child {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  align-items: center;
+  margin-top: 10px;
+}
+
+/* Base button: cohesive with your site (no span, no fill animation) */
+#announcementLogList .log-btn,
+#announcementLogList .announcement-log-item > div:last-child > button {
+  font-family: 'Inter', sans-serif;
+  padding: 8px 12px;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: .2px;
+  background: #ffffff;
+  color: #7a0c0f;
+  border: 2px solid #7a0c0f;
+  cursor: pointer;
+  transition: background .2s ease, color .2s ease, box-shadow .2s ease, transform .12s ease;
+}
+
+/* Hover: simple, pretty, on-brand */
+#announcementLogList .log-btn:hover,
+#announcementLogList .announcement-log-item > div:last-child > button:hover {
+  background: #7a0c0f;
+  color: #fff;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.12);
+  transform: translateY(-1px);
+}
+
+/* Focus ring: maroon, not blue */
+#announcementLogList .log-btn:focus,
+#announcementLogList .announcement-log-item > div:last-child > button:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(122, 12, 15, 0.28);
+}
+
+/* Delete variant (red) */
+#announcementLogList .delete-btn,
+#announcementLogList .announcement-log-item > div:last-child > button:last-child {
+  border-color: #d12323;
+  color: #d12323;
+  background: #fff;
+}
+#announcementLogList .delete-btn:hover,
+#announcementLogList .announcement-log-item > div:last-child > button:last-child:hover {
+  background: #d12323;
+  color: #fff;
+}
+#announcementLogList .delete-btn:focus,
+#announcementLogList .announcement-log-item > div:last-child > button:last-child:focus {
+  box-shadow: 0 0 0 3px rgba(209, 35, 35, 0.28);
+}
+
+/* Close button at bottom of modal */
+#closeAnnouncementLogBtn {
+  margin-top: 16px;
+  font-family: 'Inter', sans-serif;
+  padding: 10px 16px;
+  border-radius: 10px;
+  font-size: 15px;
+  font-weight: 800;
+  letter-spacing: .3px;
+  background: #ffffff;
+  color: #7a0c0f;
+  border: 2px solid #7a0c0f;
+  cursor: pointer;
+  transition: background .2s ease, color .2s ease, box-shadow .2s ease, transform .12s ease;
+}
+#closeAnnouncementLogBtn:hover {
+  background: #7a0c0f; color: #fff;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.12);
+  transform: translateY(-1px);
+}
+#closeAnnouncementLogBtn:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(122, 12, 15, 0.28);
 }
 
 
@@ -1526,33 +1710,13 @@ option {
 /* Responsive heights: let content define height */
 .adminPastMeetings {
   height: auto;
-  max-height: none;
-  overflow-y: visible;
+  max-height: 400px;
+  overflow-y: scroll;
 }
 .adminNextMeeting{
   height: auto;
   max-height: none;
-  overflow-y: visible;
-}
-
-/* Custom scrollbar (WebKit) */
-.adminPastMeetings::-webkit-scrollbar,
-.adminNextMeeting::-webkit-scrollbar {
-  width: 10px;
-}
-.adminPastMeetings::-webkit-scrollbar-track,
-.adminNextMeeting::-webkit-scrollbar-track {
-  background: #f3f3f3;
-  border-radius: 10px;
-}
-.adminPastMeetings::-webkit-scrollbar-thumb,
-.adminNextMeeting::-webkit-scrollbar-thumb {
-  background: #c7c7c7;
-  border-radius: 10px;
-}
-.adminPastMeetings::-webkit-scrollbar-thumb:hover,
-.adminNextMeeting::-webkit-scrollbar-thumb:hover {
-  background: #b0b0b0;
+  overflow-y: scroll;
 }
 
 /* In-Danger Notice */
