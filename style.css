@@ -9,7 +9,7 @@ body {
 
 /* Header with background image */
 .header {
-    padding: 60px 20px; /* gives enough vertical space without issues */
+    padding: 100px 20px; /* gives enough vertical space without issues */
     color: white;
     background-color: rgb(0, 0, 0);
     background-image: url("images/Backgroud.png");
@@ -54,123 +54,6 @@ body {
     background-color: white; color:rgb(141, 13, 24);
 }
 /* --- end of navigation bar --- */
-
-/* ===== Site-wide Announcements (banners) ===== */
-.site-announcement-banner {
-  position: fixed;
-  top: 50%; 
-  left: 50%;
-  transform: translate(-50%, -50%); /* perfectly center */
-  background: rgba(255, 255, 255, 0.874);
-  color: black;
-  border: 4px solid #000;
-  border-radius: 5px;
-  padding: 10px 14px;
-  font-weight: 600;
-  z-index: 9999;
-  width: 700px;
-  box-sizing: border-box;
-}
-
-.site-announcement-banner .banner-content {
-  display: flex;
-  flex-direction: column; /* stack text below close button */
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-}
-
-.site-announcement-banner .banner-text {
-  line-height: 1.3;
-   padding: 40px 14px;
-   font-size: 20px;
-  margin-top: 10px; /* spacing from close button */
-}
-
-.site-announcement-banner .banner-close {
-  position: absolute; /* pin inside the banner box */
-  top: 8px;
-  right: 8px;
-  appearance: none;
-  border: none;
-  background: rgba(0,0,0,0.1);
-  color: #000;
-  border-radius: 6px;
-  padding: 4px 8px;
-  cursor: pointer;
-}
-
-.site-announcement-banner .banner-close:hover {
-  background: rgba(0,0,0,0.2);
-}
-
-
-/* ===== Admin Modal (announcement manager) ===== */
-.modal {
-  position: fixed;
-  inset: 0;
-  background: rgba(0,0,0,0.35);
-  display: none;
-  z-index: 1000;
-}
-.modal .modal-content {
-  background: #fff;
-  max-width: 800px;
-  width: calc(100% - 32px);
-  margin: 6vh auto;
-  border-radius: 10px;
-  overflow: hidden;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-}
-.modal-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 14px 16px;
-  background: rgb(141, 13, 24);
-  color: #fff;
-}
-.modal-close {
-  appearance: none;
-  border: none;
-  background: rgba(255,255,255,0.2);
-  color: #fff;
-  border-radius: 6px;
-  padding: 4px 8px;
-  cursor: pointer;
-}
-.modal-close:hover { background: rgba(255,255,255,0.3); }
-.modal-section { padding: 14px 16px; border-bottom: 1px solid #eee; }
-.modal-section:last-child { border-bottom: none; }
-.input { width: 100%; padding: 8px 10px; border: 1px solid #ddd; border-radius: 6px; font-family: inherit; }
-.input.full { width: 100%; }
-.form-row { margin-bottom: 10px; }
-.form-row.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-.form-actions { display: flex; gap: 10px; }
-.primary { background: rgb(141,13,24); color: #fff; border: none; padding: 8px 12px; border-radius: 6px; cursor: pointer; }
-.secondary { background: #efefef; color: #222; border: none; padding: 8px 12px; border-radius: 6px; cursor: pointer; }
-.danger { background: #c62828; color: #fff; border: none; padding: 6px 10px; border-radius: 6px; cursor: pointer; }
-.small { font-size: 12px; padding: 6px 8px; height: 30px;}
-.form-error { color: #b00020; font-size: 13px; margin-top: 6px; }
-.muted { color: #666; font-size: 13px; }
-
-.editAnnouncement {margin-right: 10px; background-color: rgb(141,13,24); color: #fff; border: none; padding: 6px 10px; border-radius: 6px; cursor: pointer; }
-.danger:hover { background-color: #ff0000; }
-.editAnnouncement:hover{background: rgb(109, 3, 11);}
-
-.announcement-log { display: flex; flex-direction: column; gap: 8px; }
-.announcement-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 10px; border: 1px solid #eee; border-radius: 8px; background: #fafafa; }
-.announcement-info .msg { font-weight: 600; margin-bottom: 4px; }
-.announcement-info .dates { font-size: 12px; color: #444; }
-.badge { display: inline-block; padding: 2px 6px; border-radius: 10px; font-size: 11px; color: #fff; text-transform: capitalize; }
-.badge.active { background: #2e7d32; }
-.badge.upcoming { background: #0277bd; }
-.badge.expired { background: #757575; }
-
-.announcementAdminActions{
-    background: rgba(255, 255, 255, 0.75); backdrop-filter: blur(16px); border: 1px solid rgba(0, 0, 0, 0.07);
-    padding: 27px; color: black; box-shadow: none; display: flex; flex-direction: column;
-}
 
 .rankings{
     display: flex; flex-direction: row;
@@ -639,9 +522,9 @@ resized to fit nicely beside the calendar -- */
 }
 
 .event:hover {
-  background-color: rgba(255, 255, 255, 0.95); /* gets brighter so you know it’s clickable */
+  background-color: rgba(255, 255, 255, 0.95); /* gets brighter so you know itâ€™s clickable */
   box-shadow: inset 2px 0 #444, inset -2px 0 #444;
-  animation: bounce 1.15s ease-in-out infinite; /* slow bounce so it’s chill but noticeable */
+  animation: bounce 1.15s ease-in-out infinite; /* slow bounce so itâ€™s chill but noticeable */
 }
 
 /* just a lil bounce to make it look alive */
@@ -664,7 +547,7 @@ resized to fit nicely beside the calendar -- */
   justify-content: center;
   align-items: center;
   padding: 24px;
-  background: rgba(0, 0, 0, 0.38); /* closer to site’s subtle overlay */
+  background: rgba(0, 0, 0, 0.38); /* closer to siteâ€™s subtle overlay */
   z-index: 9999;
 }
 
@@ -763,7 +646,7 @@ resized to fit nicely beside the calendar -- */
   font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
   font-size: 1.4vw; /* smaller font */
   user-select: none;
-  position: relative; /* ensure it doesn’t overlap content */
+  position: relative; /* ensure it doesnâ€™t overlap content */
   z-index: 0;
 }
 
@@ -985,7 +868,6 @@ h4 {
   margin-bottom: 5px;
   color: #444;
 }
-.anoucementLogTitle{font-weight: bold;}
 
 /* Header */
 .hTwoCDash {
@@ -1051,7 +933,6 @@ h4 {
 }
 
 .meetingEdit {
-  /* Fit content and keep visual consistency */
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -1190,6 +1071,8 @@ h2 .meetingEdit {
   background-color: #fff;
   border-radius: 10px;
   padding: 75px;
+  max-height: 70vh;
+  overflow-y: auto;
   width: 300px;
   text-align: center;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
@@ -1210,6 +1093,23 @@ h2 .meetingEdit {
   font-weight: 600;
   font-family: 'Inter', sans-serif;
   transition: background-color 0.18s ease, color 0.18s ease, border-color 0.18s ease;
+}
+
+.recurring-preview {
+  margin: 15px 0;
+}
+
+.recurring-preview h4 {
+  margin-bottom: 10px;
+  color: #333;
+}
+
+#repetitions, #end-date {
+  display: inline-block;
+  margin-left: 10px;
+  padding: 5px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
 }
 
 /* Ensure modal buttons have equal width within the modal */
@@ -1350,6 +1250,99 @@ option {
 
 
 /* ------------  ADMIN PAGE --------------*/
+/* ===== Site-wide announcement banners (homepage) ===== */
+/* ===== Site-wide announcement banners (homepage) ===== */
+.site-announcement-banner {
+  background: rgba(255, 255, 255, 0.92);
+  border: 2px solid #000;
+  border-radius: 10px;
+  padding: 16px 20px;
+  max-width: 800px;
+  position: fixed;          /* <— fixed so it hovers */
+  top: 100px;               /* below header */
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 1000;            /* make sure it floats above other stuff */
+  box-shadow: 0 6px 20px rgba(0,0,0,0.2);
+  animation: fadeIn 0.3s ease-out;
+}
+
+.site-announcement-banner .banner-content {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.site-announcement-banner .banner-text {
+  font-size: 16px;
+  line-height: 1.4;
+  flex: 1;
+  color: #111;
+}
+
+.site-announcement-banner .banner-close {
+  border: none;
+  background: transparent;
+  font-size: 18px;
+  cursor: pointer;
+  padding: 4px 6px;
+  line-height: 1;
+  border-radius: 6px;
+}
+
+.site-announcement-banner .banner-close:hover {
+  background: rgba(0,0,0,0.08);
+}
+
+/* Small fade-in */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translate(-50%, -10px); }
+  to   { opacity: 1; transform: translate(-50%, 0); }
+}
+
+/* ===== Announcement Modals (admin page) ===== */
+.announcement-modal {
+  display: none; /* default hidden */
+  position: fixed;
+  z-index: 2000;               /* higher than banners */
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  overflow: auto;
+  background-color: rgba(0, 0, 0, 0.557); /* dimmed background */
+}
+
+.announcement-modal-content {
+  background: #fff;
+  margin: 8% auto;
+  padding: 20px;
+  border: 2px solid #000;
+  border-radius: 12px;
+  width: 90%;
+  max-width: 600px;
+  animation: scaleIn 0.25s ease-out;
+}
+
+@keyframes scaleIn {
+  from { transform: scale(0.9); opacity: 0; }
+  to   { transform: scale(1); opacity: 1; }
+}
+
+/* Buttons inside modals */
+.announcement-buttons {
+  margin-top: 16px;
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+}
+
+.announcement-buttons button {
+  padding: 6px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
 
 .clubsInDangerWrapper {
     width: 22%; display: flex; flex-direction: column; gap: 24px; margin-top: 40px;
@@ -1362,6 +1355,10 @@ option {
     padding: 27px; color: black; box-shadow: none; display: flex; flex-direction: column;
 }
 
+.announcement-controls {
+  min-height: 200px;
+}
+
 .clubsInDangerTitle {
   font-size: 16px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px;
   color: #333; border-bottom: 2px solid #7a0c0f; padding-bottom: 4px; margin-bottom: 20px;
@@ -1372,7 +1369,7 @@ option {
   max-height: 50vh; overflow-y: auto; font-size: 16px; font-weight: 500; text-align: left;
 }
 
-/* Container that holds all the club‐button elements */
+/* Container that holds all the clubâ€button elements */
 .clubsInDangerButtons {
   display: flex; flex-direction: column; gap: 12px;
 }
@@ -1383,7 +1380,7 @@ option {
   text-align: center; letter-spacing: 0.5px; border-radius: 0; cursor: pointer;
 }
 
-/* Animated “fill”*/
+/* Animated â€œfillâ€*/
 .clubsInDangerButtons button::before {
     content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 100%;
     background: #d0141a; transform: scaleX(0); transform-origin: right; z-index: 0;
@@ -1417,7 +1414,7 @@ option {
   cursor: pointer; text-align: center; letter-spacing: 0.5px; border-radius: 0;
   transition: color 0.3s ease;
 }
-/* Animated fill behind “Reset” text */
+/* Animated fill behind â€œResetâ€ text */
 .resetPointsButton::before {
   content: ''; position: absolute;
   top: 0; left: 0; height: 100%; width: 100%; background-color: #7a0c0f;
@@ -1771,7 +1768,7 @@ border-bottom: none;
 background-color: #eeeeee;
 }
 
-/* “No clubs found” message */
+/* â€œNo clubs foundâ€ message */
 .instant-search__no-results {
     padding: 10px; text-align: center;
     color: rgb(196, 22, 3); font-weight: bold; font-style: normal; font-size: 1rem;
