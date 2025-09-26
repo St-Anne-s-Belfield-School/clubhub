@@ -1307,10 +1307,9 @@ option {
 .announcement-log {
   display: none; /* hidden by default */
   position: fixed;
-  z-index: 2001; /* keep above all content */
+  z-index: 3000; /* keep above all content */
   left: 0; top: 0; width: 100%; height: 100%;
   background-color: rgba(0, 0, 0, 0.55); /* dimmed background */
-  overflow: auto;
   font-family: 'Inter', sans-serif; 
 }
 
@@ -1327,15 +1326,18 @@ option {
   animation: scaleIn 0.25s ease-out;
   box-shadow: 0 8px 24px rgba(0,0,0,0.2);
   font-family: 'Inter', sans-serif; 
+  display: flex;
+  flex-direction: column;
+  max-height: 80vh;   /* limit overall height */
+  overflow: hidden;   /* log list scrolls inside */
 }
 
-/* Animation */
+/* Animation! */
 @keyframes scaleIn {
   from { transform: scale(0.9); opacity: 0; }
   to   { transform: scale(1); opacity: 1; }
 }
 
-/* Buttons inside modals */
 .announcement-buttons {
   margin-top: 20px;
   display: flex;
@@ -1357,8 +1359,6 @@ option {
   transition: all 0.3s ease;
   font-family: 'Inter', sans-serif;
 }
-
-/* Hover  */
 .announcement-buttons button:hover {
   background-color: #7a0c0f;
   color: #fff;
@@ -1366,7 +1366,7 @@ option {
   box-shadow: 0 4px 12px rgba(0,0,0,0.15);
 }
 
-/* Inputs and textareas inside announcement modals */
+/* Inputs and textareas */
 .announcement-modal-content input,
 .announcement-modal-content textarea {
   font-family: 'Inter', sans-serif;
@@ -1378,8 +1378,6 @@ option {
   margin-bottom: 12px;
   transition: border-color 0.25s ease, box-shadow 0.25s ease;
 }
-
-/* clicked/focus state: maroon border + glow */
 .announcement-modal-content input:focus,
 .announcement-modal-content textarea:focus {
   outline: none;
@@ -1387,27 +1385,25 @@ option {
   box-shadow: 0 0 0 3px rgba(122, 12, 15, 0.35);
 }
 
-/* Announcement Log on admin page! */
-/* ===== Announcement Log Modal — cohesive buttons & layout ===== */
+/* ===== Announcement Log ===== */
+#announcementLogModal { font-family: 'Inter', sans-serif; z-index: 2000; }
 
-/* Keep it scoped to the log modal so it won't leak */
-#announcementLogModal {
-  font-family: 'Inter', sans-serif;
-}
-
-/* Card already styled — this just ensures a neat list layout */
 #announcementLogList {
+  flex: 1 1 auto;
+  overflow: auto;
+  padding-right: 4px;
   display: grid;
   gap: 12px;
   margin-top: 12px;
 }
 
+/* Log items */
 #announcementLogList .announcement-log-item {
   background: #fff;
-  border: 1px solid #e9e9e9;
-  border-radius: 12px;
+  border: 1px solid #d0d0d0;
+  border-radius: 10px;
   padding: 14px 16px;
-  box-shadow: 0 3px 8px rgba(0,0,0,0.06);
+  box-shadow: none;
   transition: box-shadow .15s ease, transform .15s ease;
 }
 #announcementLogList .announcement-log-item:hover {
@@ -1415,7 +1411,7 @@ option {
   transform: translateY(-1px);
 }
 
-/* Typography for the two info lines */
+/* Text lines */
 #announcementLogList .announcement-log-item > div:nth-of-type(1),
 #announcementLogList .announcement-log-item > div:nth-of-type(2) {
   font-size: 14px;
@@ -1423,7 +1419,7 @@ option {
   margin: 6px 0;
 }
 
-/* Status badge */
+/* Status badges */
 #announcementLogList .announcement-log-item .badge {
   display: inline-block;
   margin-left: 8px;
@@ -1432,101 +1428,85 @@ option {
   font-size: 12px;
   font-weight: 700;
   text-transform: capitalize;
-  background: #f3f3f3;
-  color: #333;
-  border: 1px solid #cfcfcf;
 }
-#announcementLogList .announcement-log-item .badge.active   { background:#22a06b; color:#fff; border-color:#22a06b; }
-#announcementLogList .announcement-log-item .badge.upcoming { background:#2b7de9; color:#fff; border-color:#2b7de9; }
-#announcementLogList .announcement-log-item .badge.expired  { background:#9e9e9e; color:#fff; border-color:#9e9e9e; }
-#announcementLogList .announcement-log-item .badge.deleted  { background:#d12323; color:#fff; border-color:#d12323; }
+#announcementLogList .badge.active   { background:#22a06b; color:#fff; }
+#announcementLogList .badge.upcoming { background:#2b7de9; color:#fff; }
+#announcementLogList .badge.expired  { background:#9e9e9e; color:#fff; }
+#announcementLogList .badge.deleted  { background:#d12323; color:#fff; }
 
-/* Actions row
-   Prefer a class on the container: .announcement-actions
-   Fallback (last-child) included so it still works if you don't add the class. */
-#announcementLogList .announcement-actions,
-#announcementLogList .announcement-log-item > div:last-child {
+/* Actions row */
+#announcementLogList .announcement-actions {
   display: flex;
   gap: 10px;
   flex-wrap: wrap;
-  align-items: center;
   margin-top: 10px;
 }
 
-/* Base button: cohesive with your site (no span, no fill animation) */
-#announcementLogList .log-btn,
-#announcementLogList .announcement-log-item > div:last-child > button {
+/* Edit/Delete buttons */
+#announcementLogList .log-btn {
   font-family: 'Inter', sans-serif;
   padding: 8px 12px;
-  border-radius: 10px;
+  border-radius: 8px;
   font-size: 14px;
   font-weight: 700;
-  letter-spacing: .2px;
-  background: #ffffff;
-  color: #7a0c0f;
-  border: 2px solid #7a0c0f;
   cursor: pointer;
-  transition: background .2s ease, color .2s ease, box-shadow .2s ease, transform .12s ease;
+  transition: background .2s ease, color .2s ease, transform .12s ease;
+  border: 2px solid transparent;
 }
-
-/* Hover: simple, pretty, on-brand */
-#announcementLogList .log-btn:hover,
-#announcementLogList .announcement-log-item > div:last-child > button:hover {
+#announcementLogList .edit-btn {
+  background: #fff;
+  color: #7a0c0f;
+  border-color: #7a0c0f;
+}
+#announcementLogList .edit-btn:hover {
   background: #7a0c0f;
   color: #fff;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.12);
-  transform: translateY(-1px);
 }
-
-/* Focus ring: maroon, not blue */
-#announcementLogList .log-btn:focus,
-#announcementLogList .announcement-log-item > div:last-child > button:focus {
-  outline: none;
-  box-shadow: 0 0 0 3px rgba(122, 12, 15, 0.28);
-}
-
-/* Delete variant (red) */
-#announcementLogList .delete-btn,
-#announcementLogList .announcement-log-item > div:last-child > button:last-child {
-  border-color: #d12323;
-  color: #d12323;
+#announcementLogList .delete-btn {
   background: #fff;
+  color: #d12323;
+  border-color: #d12323;
 }
-#announcementLogList .delete-btn:hover,
-#announcementLogList .announcement-log-item > div:last-child > button:last-child:hover {
+#announcementLogList .delete-btn:hover {
   background: #d12323;
   color: #fff;
 }
-#announcementLogList .delete-btn:focus,
-#announcementLogList .announcement-log-item > div:last-child > button:last-child:focus {
-  box-shadow: 0 0 0 3px rgba(209, 35, 35, 0.28);
+
+/* Footer (Close & Clear buttons sticky) */
+.announcement-log-footer {
+  position: sticky;
+  bottom: 0;
+  padding-top: 12px;
+  display: flex;
+  gap: 10px;
+  justify-content: flex-start;
 }
 
-/* Close button at bottom of modal */
+#clearAnnouncementLogBtn,
 #closeAnnouncementLogBtn {
-  margin-top: 16px;
+  position: relative;
+  text-align: center;
+  justify-content: center;
+  align-items: center;
+  display: flex;
   font-family: 'Inter', sans-serif;
-  padding: 10px 16px;
+  padding: 10px 20px;
   border-radius: 10px;
   font-size: 15px;
   font-weight: 800;
-  letter-spacing: .3px;
-  background: #ffffff;
+  background-color: white;
   color: #7a0c0f;
   border: 2px solid #7a0c0f;
   cursor: pointer;
-  transition: background .2s ease, color .2s ease, box-shadow .2s ease, transform .12s ease;
 }
+#clearAnnouncementLogBtn:hover,
 #closeAnnouncementLogBtn:hover {
   background: #7a0c0f; color: #fff;
   box-shadow: 0 4px 10px rgba(0,0,0,0.12);
   transform: translateY(-1px);
 }
-#closeAnnouncementLogBtn:focus {
-  outline: none;
-  box-shadow: 0 0 0 3px rgba(122, 12, 15, 0.28);
-}
 
+/* ADMIN CLUBS IN DANEGER ECT> */
 
 .clubsInDangerWrapper {
     width: 22%; display: flex; flex-direction: column; gap: 24px; margin-top: 40px;
