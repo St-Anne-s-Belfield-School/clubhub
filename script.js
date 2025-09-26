@@ -805,6 +805,7 @@ export async function resetPoints(){
     logModal: document.getElementById("announcementLogModal"),
     logList: document.getElementById("announcementLogList"),
     logCloseBtn: document.getElementById("closeAnnouncementLogBtn"),
+    logClearBtn: document.getElementById("clearAnnouncementLogBtn"),
   };
 
   if (!el.createBtn || !el.logBtn) return; // run only on god.html
@@ -876,41 +877,106 @@ export async function resetPoints(){
     clearForm(); show(el.modal,false); if(el.logModal && el.logModal.style.display!=="none") await renderLog();
   }
 
-  async function renderLog() {
-    if(!el.logList) return;
-    el.logList.innerHTML="Loading…";
-    const items=await getAll(); const now=new Date();
-    const order={active:0,upcoming:1,expired:2,deleted:3,invalid:4};
-    items.sort((a,b)=>{const sa=order[statusOf(a,now)]??9,sb=order[statusOf(b,now)]??9; if(sa!==sb)return sa-sb; return (b.startAt||"").localeCompare(a.startAt||"");});
-    el.logList.innerHTML="";
-    items.forEach(a=>{
-      const st=statusOf(a,now);
-      const wrap=document.createElement("div"); wrap.className="announcement-log-item";
-      const msgLine=document.createElement("div"); msgLine.innerHTML=`<strong>Message:</strong> ${escapeHtml(a.message||"")}`;
-      const datesLine=document.createElement("div"); const s=a.startAt?new Date(a.startAt).toLocaleString():"—"; const e=a.endAt?new Date(a.endAt).toLocaleString():"—"; datesLine.innerHTML=`<strong>Dates:</strong> ${s} → ${e} <span class="badge">${st}</span>`;
-      const actions = document.createElement("div");
-      actions.classList.add("announcement-actions"); // add this line
+async function renderLog() {
+  if (!el.logList) return;
 
-      const editBtn = document.createElement("button");
-      editBtn.textContent = "Edit";
-      editBtn.classList.add("log-btn", "edit-btn");
+  el.logList.innerHTML = "Loading…";
+  const items = await getAll();
+  const now = new Date();
 
-      const toggleBtn = document.createElement("button");
-      toggleBtn.textContent = (st==="active"||a.isActive) ? "Deactivate" : "Activate";
-      toggleBtn.classList.add("log-btn", "toggle-btn");
+  // sort by status, then by startAt desc
+  const order = { active: 0, upcoming: 1, expired: 2, deleted: 3, invalid: 4 };
+  items.sort((a, b) => {
+    const sa = order[statusOf(a, now)] ?? 9;
+    const sb = order[statusOf(b, now)] ?? 9;
+    if (sa !== sb) return sa - sb;
+    return (b.startAt || "").localeCompare(a.startAt || "");
+  });
 
-      const delBtn = document.createElement("button");
-      delBtn.textContent = "Delete";
-      delBtn.classList.add("log-btn", "delete-btn");
+  el.logList.innerHTML = "";
 
+  items.forEach(a => {
+    const st = statusOf(a, now); // "active" | "upcoming" | "expired" | "deleted" | "invalid"
 
-      actions.appendChild(editBtn); actions.appendChild(toggleBtn); actions.appendChild(delBtn);
-      wrap.appendChild(msgLine); wrap.appendChild(datesLine); wrap.appendChild(actions);
-      el.logList.appendChild(wrap);
-    });
+    // card
+    const wrap = document.createElement("div");
+    wrap.className = "announcement-log-item";
+
+    // message
+    const msgLine = document.createElement("div");
+    msgLine.innerHTML = `<strong>Message:</strong> ${escapeHtml(a.message || "")}`;
+
+    // dates + status badge
+    const datesLine = document.createElement("div");
+    const s = a.startAt ? new Date(a.startAt).toLocaleString() : "—";
+    const e = a.endAt ? new Date(a.endAt).toLocaleString() : "—";
+    datesLine.innerHTML = `<strong>Dates:</strong> ${s} → ${e} `;
+
+    const badge = document.createElement("span");
+    badge.classList.add("badge", st); // <-- important: add status class for color
+    badge.textContent = st;
+    datesLine.appendChild(badge);
+
+    // actions (Edit + Delete only)
+    const actions = document.createElement("div");
+    actions.classList.add("announcement-actions");
+
+    const editBtn = document.createElement("button");
+    editBtn.textContent = "Edit";
+    editBtn.classList.add("log-btn", "edit-btn");
+    editBtn.onclick = () => {
+      state.editingId = a.id;
+      if (el.modalTitle) el.modalTitle.textContent = "Edit Announcement";
+      if (el.msg)   el.msg.value   = a.message || "";
+      if (el.start) el.start.value = a.startAt ? isoToLocalDT(a.startAt) : "";
+      if (el.end)   el.end.value   = a.endAt ? isoToLocalDT(a.endAt) : "";
+      show(el.modal, true);
+    };
+
+    const delBtn = document.createElement("button");
+    delBtn.textContent = "Delete";
+    delBtn.classList.add("log-btn", "delete-btn");
+    delBtn.onclick = async () => {
+      if (!confirm("Delete this announcement?")) return;
+      // treat Delete like Deactivate (soft delete so it stays in history)
+      await update(a.id, { deleted: true, updatedAt: Date.now() });
+      await renderLog();
+    };
+
+    actions.appendChild(editBtn);
+    actions.appendChild(delBtn);
+
+    wrap.appendChild(msgLine);
+    wrap.appendChild(datesLine);
+    wrap.appendChild(actions);
+    el.logList.appendChild(wrap);
+  });
+}
+
+async function clearAnnouncementHistory() {
+  if (!confirm("This will clear all past/deleted announcements and keep only current or future ones. Proceed?")) return;
+
+  const items = await getAll();
+  const now = new Date();
+
+  // delete items that are: deleted OR invalid OR ended in the past
+  const toDelete = items.filter(a => {
+    if (a.deleted) return true;
+    if (!a.startAt || !a.endAt) return true;
+    const end = new Date(a.endAt);
+    return end < now; // strictly in the past gets wiped
+  });
+
+  for (const a of toDelete) {
+    try { await remove(a.id); } catch (e) { /* ignore and continue */ }
   }
 
+  await renderLog();
+}
+
+
   // Wire up events
+  if (el.logClearBtn) el.logClearBtn.onclick = clearAnnouncementHistory;
   el.createBtn.onclick=()=>{ clearForm(); show(el.modal,true); };
   el.cancelBtn.onclick=()=>{ clearForm(); show(el.modal,false); };
   el.saveBtn.onclick=onSave;
