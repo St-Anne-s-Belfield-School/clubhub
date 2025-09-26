@@ -21,7 +21,7 @@
         <h1 class="clubName" id="clubName">Club Dashboard</h1>
     </header>
 
-    <!-- Creates a bar below the header box with nav buttons -->
+    <!-- Creates a bar bellow hearder box with nav buttons -->
     <div class="nav">
         <button class="button" onclick="location.replace('index.html');">Home</button>
         <!-- <button class="button">Calendar</button> -->
@@ -72,19 +72,44 @@
             <textarea id="meeting-location"></textarea>
     
             <label class="eventQuestion">Is this a meeting or an event?</label><br>
-    
+
             <label class="radio-container">
                 <input type="radio" name="event" id="yes" value="yes">
                 <span class="custom-radio"></span> Event
             </label>
-    
+
             <label class="radio-container">
                 <input type="radio" name="event" id="no" value="no">
                 <span class="custom-radio"></span> Meeting
             </label>
-    
+
             <br><br>
-    
+
+            <label><input type="checkbox" id="recurring"> Recurring</label>
+
+            <div id="recurring-options" style="display: none;">
+                <label for="frequency">Frequency:</label>
+                <select id="frequency">
+                    <option value="weekly">Weekly</option>
+                    <option value="biweekly">Biweekly</option>
+                    <option value="monthly">Monthly</option>
+                </select>
+
+                <label>End condition:</label>
+                <label><input type="radio" name="end-type" value="count" checked> Number of repetitions</label>
+                <input type="number" id="repetitions" min="1" value="4">
+
+                <label><input type="radio" name="end-type" value="date"> End date</label>
+                <input type="date" id="end-date">
+            </div>
+
+            <br><br>
+
+            <div class="recurring-preview" id="recurring-preview" style="display: none;">
+                <h4>Meeting Schedule Preview:</h4>
+                <div id="recurring-preview-list" style="max-height: 150px; overflow-y: auto; background: #f9f9f9; padding: 10px; border-radius: 4px; font-size: 14px;"></div>
+            </div>
+
             <div>
                 <button class="meetingEdit" onclick="saveMeeting()" id="createMeetButton">Create</button>
                 <button class="meetingEdit" onclick="document.getElementById('createMeetModal').style.display = 'none';">Cancel</button>
