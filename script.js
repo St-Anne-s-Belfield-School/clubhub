@@ -888,13 +888,21 @@ export async function resetPoints(){
       const wrap=document.createElement("div"); wrap.className="announcement-log-item";
       const msgLine=document.createElement("div"); msgLine.innerHTML=`<strong>Message:</strong> ${escapeHtml(a.message||"")}`;
       const datesLine=document.createElement("div"); const s=a.startAt?new Date(a.startAt).toLocaleString():"—"; const e=a.endAt?new Date(a.endAt).toLocaleString():"—"; datesLine.innerHTML=`<strong>Dates:</strong> ${s} → ${e} <span class="badge">${st}</span>`;
-      const actions=document.createElement("div");
+      const actions = document.createElement("div");
+      actions.classList.add("announcement-actions"); // add this line
 
-      const editBtn=document.createElement("button"); editBtn.textContent="Edit"; editBtn.onclick=()=>{ state.editingId=a.id; if(el.modalTitle) el.modalTitle.textContent="Edit Announcement"; clearForm(); if(el.msg) el.msg.value=a.message||""; if(el.start) el.start.value=a.startAt?isoToLocalDT(a.startAt):""; if(el.end) el.end.value=a.endAt?isoToLocalDT(a.endAt):""; show(el.modal,true); };
+      const editBtn = document.createElement("button");
+      editBtn.textContent = "Edit";
+      editBtn.classList.add("log-btn", "edit-btn");
 
-      const toggleBtn=document.createElement("button"); toggleBtn.textContent=(st==="active"||a.isActive)?"Deactivate":"Activate"; toggleBtn.onclick=async()=>{ const willActive=(new Date(a.startAt)<=new Date()&&new Date()<=new Date(a.endAt)); if((!a.isActive||st!=="active")&&willActive){const cnt=await countActive(a.id); if(cnt>=MAX_ACTIVE){alert(`Max ${MAX_ACTIVE} active announcements reached.`);return;} } await update(a.id,{isActive:!(a.isActive===false),updatedAt:Date.now()}); await renderLog(); };
+      const toggleBtn = document.createElement("button");
+      toggleBtn.textContent = (st==="active"||a.isActive) ? "Deactivate" : "Activate";
+      toggleBtn.classList.add("log-btn", "toggle-btn");
 
-      const delBtn=document.createElement("button"); delBtn.textContent="Delete"; delBtn.onclick=async()=>{ if(!confirm("Delete permanently?"))return; await remove(a.id); await renderLog(); };
+      const delBtn = document.createElement("button");
+      delBtn.textContent = "Delete";
+      delBtn.classList.add("log-btn", "delete-btn");
+
 
       actions.appendChild(editBtn); actions.appendChild(toggleBtn); actions.appendChild(delBtn);
       wrap.appendChild(msgLine); wrap.appendChild(datesLine); wrap.appendChild(actions);
