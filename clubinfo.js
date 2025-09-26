@@ -553,57 +553,139 @@ function compareReverseDates(meetingA, meetingB) {
 }
 
 async function showEditModal(id){
-  console.log('meeting create modal Opened')
-  // clubID should be the name of the club
-  const clubID = sessionStorage.getItem("club"); 
-  console.log(clubID);
-  // Show the delete confirmation modal
+  console.log('meeting create modal Opened');
   const modal = document.getElementById("createMeetModal");
   modal.style.display = "flex";
+  // remember which club we're creating for
+  modal.dataset.clubId = id || "";
 
-  const createButton = document.getElementById("createMeetButton");
-  createButton.onclick = function (){
-    console.log("function create called")
-    createMeeting(id);
-  }
+  // Reset recurring checkbox and hide options
+  const recurringCheckbox = document.getElementById("recurring");
+  const recurringOptions = document.getElementById("recurring-options");
+  recurringCheckbox.checked = false;
+  recurringOptions.style.display = "none";
+
+  // Show/hide options
+  recurringCheckbox.addEventListener("change", () => {
+    recurringOptions.style.display = recurringCheckbox.checked ? "block" : "none";
+  });
 }
+
 
 async function createMeeting(id) {
   console.log("Create meeting called!");
-  // Get input values
-  const meetingDate = document.getElementById("meeting-date").value;
-  const meetingTime = document.getElementById("meeting-time").value;
+
+  // Inputs
+  const meetingDate = document.getElementById("meeting-date").value;   // YYYY-MM-DD
+  const meetingTime = document.getElementById("meeting-time").value;   // HH:MM
   const meetingDesc = document.getElementById("meeting-desc").value;
   const meetingLocation = document.getElementById("meeting-location").value;
   const isAnEvent = document.querySelector('input[name="event"]:checked')?.value === "yes";
-  //Checks if the date exists (should allways, but better safe than sorry + added meeting description)
+  const recurring = document.getElementById("recurring")?.checked === true;
+
   if (!meetingDate || !meetingTime || !meetingDesc || !meetingLocation) {
     alert("Please fill in all fields!");
     return;
   }
-  // Convert date and time input to a Firestore timestamp
-  const [year, month, day] = meetingDate.split("-").map(Number);
-  const [hours, minutes] = meetingTime.split(":").map(Number);
-  const fullDate = new Date(year, month - 1, day, hours, minutes);
-  console.log(fullDate);
-  const meetingTimestamp = Timestamp.fromDate(fullDate);
 
-    // Get a reference to the "all-meetings" subcollection
-    const docRef = doc(db, "clubs", id);
-    const meetingsCollectionRef = collection(docRef, "all-meetings");
-    // Create a new meeting document
-    const newMeetingRef = doc(meetingsCollectionRef); // Auto-generate ID
+  // Helpers (scoped here to avoid changing imports/Globals)
+  const atLocalTime = (dateOnly, timeHHmm) => {
+    const [y, m, d] = dateOnly.split("-").map(Number);
+    const [hh, mm] = timeHHmm.split(":").map(Number);
+    return new Date(y, m - 1, d, hh, mm, 0, 0);
+  };
+  const addDays = (dt, n) => {
+    const d = new Date(dt.getTime());
+    d.setDate(d.getDate() + n);
+    return d;
+  };
+  const addMonthsPreserveDate = (dt, n) => {
+    const d = new Date(dt.getTime());
+    d.setMonth(d.getMonth() + n);
+    return d;
+  };
+
+  const firstDateTime = atLocalTime(meetingDate, meetingTime);
+
+  // Build list of occurrence Date objects (always include the first)
+  let occurrences = [firstDateTime];
+
+  if (recurring) {
+    const freq = document.getElementById("frequency").value; // "weekly"|"biweekly"|"monthly"
+    const endType = document.querySelector('input[name="end-type"]:checked')?.value || "count";
+
+    if (endType === "count") {
+      // Number of repetitions (including the first one already added)
+      let reps = parseInt(document.getElementById("repetitions").value || "1", 10);
+      if (isNaN(reps) || reps < 1) reps = 1;
+
+      if (freq === "weekly" || freq === "biweekly") {
+        const step = (freq === "biweekly") ? 14 : 7;
+        let cur = new Date(firstDateTime.getTime());
+        for (let i = 1; i < reps; i++) {
+          cur = addDays(cur, step);
+          occurrences.push(new Date(cur.getTime()));
+        }
+      } else { // monthly
+        let cur = new Date(firstDateTime.getTime());
+        for (let i = 1; i < reps; i++) {
+          cur = addMonthsPreserveDate(cur, 1);
+          occurrences.push(new Date(cur.getTime()));
+        }
+      }
+    } else {
+      // End by date (inclusive)
+      const untilRaw = document.getElementById("end-date").value;
+      if (!untilRaw) {
+        alert("Please choose an end date for the recurrence.");
+        return;
+      }
+      const [uy, um, ud] = untilRaw.split("-").map(Number);
+      const until = new Date(uy, um - 1, ud, 23, 59, 59, 999);
+
+      if (freq === "weekly" || freq === "biweekly") {
+        const step = (freq === "biweekly") ? 14 : 7;
+        let cur = addDays(firstDateTime, step);
+        while (cur <= until) {
+          occurrences.push(new Date(cur.getTime()));
+          cur = addDays(cur, step);
+        }
+      } else { // monthly
+        let cur = addMonthsPreserveDate(firstDateTime, 1);
+        while (cur <= until) {
+          occurrences.push(new Date(cur.getTime()));
+          cur = addMonthsPreserveDate(cur, 1);
+        }
+      }
+    }
+  }
+
+  // Write each occurrence as an unrelated meeting doc (no new fields added)
+  const clubDocRef = doc(db, "clubs", id);
+  const meetingsCollectionRef = collection(clubDocRef, "all-meetings");
+
+  for (const when of occurrences) {
+    const meetingTimestamp = Timestamp.fromDate(when);
+    const newMeetingRef = doc(meetingsCollectionRef); // Auto ID
     await setDoc(newMeetingRef, {
-        attendance: 0,
-        description: meetingDesc,
-        location: meetingLocation,
-        date: meetingTimestamp,
-        isAnEvent: isAnEvent
+      attendance: 0,
+      description: meetingDesc,
+      location: meetingLocation,
+      date: meetingTimestamp,
+      isAnEvent: isAnEvent
     });
+  }
 
-    console.log("Meeting saved successfully!");
-    location.reload();
+  console.log(`Saved ${occurrences.length} meeting(s).`);
+  location.reload();
 }
+
+window.saveMeeting = function () {
+  const modal = document.getElementById("createMeetModal");
+  const id = modal?.dataset?.clubId || sessionStorage.getItem("club");
+  createMeeting(id);
+};
+
 
 async function showDeleteModal(meetingID, id) {
   // I want to add sone of the meeting info club, date, time
@@ -809,14 +891,26 @@ export async function editVerification() {
     if (logoutBtn) {
       logoutBtn.style.display = "inline-block";
       logoutBtn.onclick = function () {
-        // Only clear login/auth session keys
-        sessionStorage.removeItem("clubAuth");
-        sessionStorage.removeItem("isGod");
-        sessionStorage.removeItem("canEdit");
-        sessionStorage.removeItem("password");
+        // If admin, sign out of Firebase too
+        if (isGod === "true") {
+          signOut(auth)
+            .then(() => {
+              sessionStorage.clear();
+              location.reload();
+            })
+            .catch((error) => {
+              console.error("Error signing out:", error);
+            });
+        } else {
+          // Only clear login/auth session keys
+          sessionStorage.removeItem("clubAuth");
+          sessionStorage.removeItem("isGod");
+          sessionStorage.removeItem("canEdit");
+          sessionStorage.removeItem("password");
 
-        //reload the page to update UI
-        location.reload();
+          //reload the page to update UI
+          location.reload();
+        }
       };
     }
 
