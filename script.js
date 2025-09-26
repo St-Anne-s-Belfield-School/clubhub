@@ -1,6 +1,6 @@
 import { getAuth, createUserWithEmailAndPassword, onAuthStateChanged , signInWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-auth.js";
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-app.js";
-import { getFirestore, collection, getDoc, getDocs, doc, updateDoc, deleteDoc, setDoc, addDoc } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-firestore.js";
+import { getFirestore, collection, getDoc, getDocs, doc, updateDoc, deleteDoc, setDoc, Timestamp} from "https://www.gstatic.com/firebasejs/10.0.0/firebase-firestore.js";
 const firebaseConfig = {
     apiKey: "AIzaSyAH3oWF9S-ePd0352Ca-TdE5cu6oinzlXo",
     authDomain: "softwareengineering-94854.firebaseapp.com",
@@ -13,289 +13,6 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 const auth = getAuth(app);
-
-// ===== Site-wide Announcements =====
-const ANNOUNCEMENTS_COLLECTION = "announcements";
-
-// Modal helpers
-export function openAnnouncementManager() {
-  const modal = document.getElementById("announcementManagerModal");
-  if (modal) {
-    modal.style.display = "block";
-    clearAnnouncementForm();
-    refreshAnnouncementLog();
-  }
-}
-
-export function closeAnnouncementManager() {
-  const modal = document.getElementById("announcementManagerModal");
-  if (modal) modal.style.display = "none";
-}
-
-export function clearAnnouncementForm() {
-  const msg = document.getElementById("announcementMessage");
-  const start = document.getElementById("announcementStart");
-  const end = document.getElementById("announcementEnd");
-  const err = document.getElementById("announcementFormError");
-  if (msg) msg.value = "";
-  if (start) start.value = "";
-  if (end) end.value = "";
-  if (err) { err.style.display = "none"; err.textContent = ""; }
-  // Clear edit id marker
-  sessionStorage.removeItem("editingAnnouncementId");
-}
-
-function normalizeDateToYMD(dateStr) {
-  // Ensure YYYY-MM-DD, day precision only
-  const d = new Date(dateStr + "T00:00:00");
-  if (isNaN(d)) return null;
-  const y = d.getFullYear();
-  const m = String(d.getMonth() + 1).padStart(2, "0");
-  const day = String(d.getDate()).padStart(2, "0");
-  return `${y}-${m}-${day}`;
-}
-
-function todayYMD() {
-  const d = new Date();
-  const y = d.getFullYear();
-  const m = String(d.getMonth() + 1).padStart(2, "0");
-  const day = String(d.getDate()).padStart(2, "0");
-  return `${y}-${m}-${day}`;
-}
-
-async function countActiveAnnouncements(excludeId = null) {
-  const snapshot = await getDocs(collection(db, ANNOUNCEMENTS_COLLECTION));
-  const today = todayYMD();
-  let active = 0;
-  snapshot.forEach(docSnap => {
-    const data = docSnap.data();
-    const id = docSnap.id;
-    const { startDate, endDate, deleted } = data;
-    if (deleted) return;
-    if (excludeId && id === excludeId) return;
-    if (startDate && endDate && startDate <= today && today <= endDate) {
-      active += 1;
-    }
-  });
-  return active;
-}
-
-export async function saveAnnouncement() {
-  const msg = document.getElementById("announcementMessage").value.trim();
-  const startRaw = document.getElementById("announcementStart").value;
-  const endRaw = document.getElementById("announcementEnd").value;
-  const err = document.getElementById("announcementFormError");
-  const editingId = sessionStorage.getItem("editingAnnouncementId") || null;
-
-  const startDate = normalizeDateToYMD(startRaw);
-  const endDate = normalizeDateToYMD(endRaw);
-
-  if (!msg || !startDate || !endDate) {
-    if (err) { err.style.display = "block"; err.textContent = "Please provide message, start date, and end date."; }
-    return;
-  }
-  if (endDate < startDate) {
-    if (err) { err.style.display = "block"; err.textContent = "End date must be on or after the start date."; }
-    return;
-  }
-
-  // Enforce max two active announcements
-  const activeCount = await countActiveAnnouncements(editingId);
-  const today = todayYMD();
-  const willBeActive = (startDate <= today && today <= endDate);
-  if (willBeActive && activeCount >= 2) {
-    if (err) { err.style.display = "block"; err.textContent = "Maximum of two active announcements allowed."; }
-    return;
-  }
-
-  const payload = {
-    message: msg,
-    startDate,
-    endDate,
-    updatedAt: Date.now(),
-    deleted: false
-  };
-
-  if (editingId) {
-    await updateDoc(doc(db, ANNOUNCEMENTS_COLLECTION, editingId), payload);
-  } else {
-    await addDoc(collection(db, ANNOUNCEMENTS_COLLECTION), payload);
-  }
-
-  clearAnnouncementForm();
-  refreshAnnouncementLog();
-  // Re-render banners across pages on next load. If on index, render now.
-  renderActiveAnnouncementBanners();
-}
-
-function statusOfAnnouncement(a, today) {
-  if (a.deleted) return "deleted";
-  if (a.startDate <= today && today <= a.endDate) return "active";
-  if (today < a.startDate) return "upcoming";
-  return "expired";
-}
-
-export async function refreshAnnouncementLog() {
-  const container = document.getElementById("announcementLog");
-  if (!container) return;
-  container.innerHTML = "Loading...";
-  const snapshot = await getDocs(collection(db, ANNOUNCEMENTS_COLLECTION));
-  const today = todayYMD();
-  const items = [];
-  snapshot.forEach(docSnap => {
-    items.push({ id: docSnap.id, ...docSnap.data() });
-  });
-
-  // Sort by status: active, upcoming, expired; then by startDate desc
-  items.sort((a, b) => {
-    const order = { active: 0, upcoming: 1, expired: 2 };
-    const sa = order[statusOfAnnouncement(a, today)] ?? 3;
-    const sb = order[statusOfAnnouncement(b, today)] ?? 3;
-    if (sa !== sb) return sa - sb;
-    return (b.startDate || "").localeCompare(a.startDate || "");
-  });
-
-  container.innerHTML = "";
-  for (const a of items) {
-    const st = statusOfAnnouncement(a, today);
-    const row = document.createElement("div");
-    row.className = `announcement-row status-${st}`;
-
-    const info = document.createElement("div");
-    info.className = "announcement-info";
-    info.innerHTML = `<div class="msg">${a.message || ""}</div>
-      <div class="dates">${a.startDate} → ${a.endDate} • <span class="badge ${st}">${st}</span></div>`;
-
-    const actions = document.createElement("div");
-    actions.className = "announcement-actions";
-
-    const editBtn = document.createElement("button");
-    editBtn.className = "small editAnnouncement";
-    editBtn.textContent = "Edit";
-    editBtn.onclick = () => {
-      sessionStorage.setItem("editingAnnouncementId", a.id);
-      const msgEl = document.getElementById("announcementMessage");
-      const sEl = document.getElementById("announcementStart");
-      const eEl = document.getElementById("announcementEnd");
-      if (msgEl) msgEl.value = a.message || "";
-      if (sEl) sEl.value = a.startDate || "";
-      if (eEl) eEl.value = a.endDate || "";
-      openAnnouncementManager();
-    };
-
-    const reactivateBtn = document.createElement("button");
-    reactivateBtn.className = "small";
-    reactivateBtn.textContent = "Reactivate";
-    reactivateBtn.style.display = (st === "expired" || st === "upcoming") ? "inline-block" : "none";
-    reactivateBtn.onclick = async () => {
-      // Attempt to set start to today if already in the past
-      const newStart = (a.startDate > today) ? a.startDate : today;
-      const newEnd = a.endDate;
-      const willBeActive = (newStart <= today && today <= newEnd);
-      const activeCount = await countActiveAnnouncements(a.id);
-      if (willBeActive && activeCount >= 2) {
-        alert("Cannot reactivate: maximum of two active announcements allowed.");
-        return;
-      }
-      await updateDoc(doc(db, ANNOUNCEMENTS_COLLECTION, a.id), {
-        startDate: newStart,
-        endDate: newEnd,
-        deleted: false,
-        updatedAt: Date.now()
-      });
-      refreshAnnouncementLog();
-      renderActiveAnnouncementBanners();
-    };
-
-    const delBtn = document.createElement("button");
-    delBtn.className = "small danger";
-    delBtn.textContent = "Delete";
-    delBtn.onclick = async () => {
-      if (!confirm("Delete this announcement?")) return;
-      await updateDoc(doc(db, ANNOUNCEMENTS_COLLECTION, a.id), { deleted: true, updatedAt: Date.now() });
-      refreshAnnouncementLog();
-      renderActiveAnnouncementBanners();
-    };
-
-    actions.appendChild(editBtn);
-    actions.appendChild(reactivateBtn);
-    actions.appendChild(delBtn);
-
-    row.appendChild(info);
-    row.appendChild(actions);
-    container.appendChild(row);
-  }
-}
-
-// ===== Banner rendering =====
-function bannerDismissKey(a) {
-  // include updatedAt to re-show if updated, and endDate to ensure reset after expiry
-  return `announcement_dismissed_${a.id}_${a.updatedAt || 0}_${a.endDate}`;
-}
-
-function isDismissed(a) {
-  return sessionStorage.getItem(bannerDismissKey(a)) === "1";
-}
-
-function setDismissed(a) {
-  sessionStorage.setItem(bannerDismissKey(a), "1");
-}
-
-function insertAfterHeader(banner) {
-  const header = document.getElementById("header");
-  if (header && header.parentNode) {
-    header.parentNode.insertBefore(banner, header.nextSibling);
-  } else {
-    document.body.insertBefore(banner, document.body.firstChild);
-  }
-}
-
-export async function renderActiveAnnouncementBanners() {
-  // Clear existing banners
-  document.querySelectorAll('.site-announcement-banner').forEach(n => n.remove());
-
-  const snapshot = await getDocs(collection(db, ANNOUNCEMENTS_COLLECTION));
-  const today = todayYMD();
-  const active = [];
-  snapshot.forEach(docSnap => {
-    const data = docSnap.data();
-    if (data.deleted) return;
-    if (data.startDate && data.endDate && data.startDate <= today && today <= data.endDate) {
-      active.push({ id: docSnap.id, ...data });
-    }
-  });
-
-  // Sort by startDate desc and take at most two
-  active.sort((a, b) => (b.startDate || "").localeCompare(a.startDate || ""));
-  const topTwo = active.slice(0, 2);
-
-  let shown = 0;
-  for (const a of topTwo) {
-    if (isDismissed(a)) continue;
-    const banner = document.createElement('div');
-    banner.className = 'site-announcement-banner';
-    banner.innerHTML = `
-      <div class="banner-content">
-        <div class="banner-text">${a.message}</div>
-        <button class="banner-close" aria-label="Dismiss">✕</button>
-      </div>`;
-
-    banner.querySelector('.banner-close').onclick = () => {
-      setDismissed(a);
-      banner.remove();
-    };
-
-    insertAfterHeader(banner);
-    shown += 1;
-  }
-}
-
-// On load for every page include banners
-if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', renderActiveAnnouncementBanners);
-} else {
-  renderActiveAnnouncementBanners();
-}
 
 // ——————LOGIN CODE TO VERIFY THE ADMIN IS LOGED IN—————//
 export const login =  function(email, password){
@@ -310,8 +27,6 @@ export const login =  function(email, password){
       const errorMessage = error.message;
     });
   }
-
-
 
   export const verification = async function(){
     const user = auth.currentUser;
@@ -367,6 +82,7 @@ export const displayClubsInDanger = async function() {
   var clubsInDangerDiv = document.getElementById("clubsInDangerDiv");
   const databaseItems = await getDocs(collection(db, "clubs"));
 
+
   const todaysDate = new Date();
   // Calculate the date for two months ago
   const twoMonthsAgo = new Date(todaysDate);
@@ -387,65 +103,56 @@ export const displayClubsInDanger = async function() {
     }
   });
 
-  // Sort alphabetically by club name
+  // Render clubs in danger in the div
   clubsInDanger.sort((a, b) => {
     const nameA = a.data().clubName.toLowerCase();
     const nameB = b.data().clubName.toLowerCase();
     return nameA.localeCompare(nameB);
   });
-//CLUBBA HUBBA IS SUPREME!!!
+
   const clubsInDangerButtonsContainer = document.getElementById("clubsInDangerButtonsContainer");
   clubsInDangerButtonsContainer.innerHTML = ""; // Clear old buttons
 
-  if (clubsInDanger.length === 0) {
-    // No clubs in danger? Then show this message instead
-    const allActiveMessage = document.createElement("div");
-    allActiveMessage.textContent = "No clubs are curently in danger. All clubs are active!";
-    allActiveMessage.classList.add("allClubsActiveMessage");
-    clubsInDangerButtonsContainer.appendChild(allActiveMessage);
-  } else {
-    // Render clubs in danger as buttons
-    clubsInDanger.forEach(club => {
-      const clubInDanger = document.createElement("button");
-      clubInDanger.classList.add("clubsInDangerButton");
+  clubsInDanger.forEach(club => {
+    const clubInDanger = document.createElement("button");
+    clubInDanger.classList.add("clubsInDangerButton");
 
-      const span = document.createElement("span");
-      span.innerHTML = club.data().clubName;
+    const span = document.createElement("span");
+    span.innerHTML = club.data().clubName;
 
-      clubInDanger.onclick = function () {
-        sessionStorage.setItem("adminClub", club.data().username);
-        location.reload();
-      };
+    clubInDanger.onclick = function () {
+      sessionStorage.setItem("adminClub", club.data().username);
+      location.reload();
+    };
 
-      clubInDanger.appendChild(span);
-      clubsInDangerButtonsContainer.appendChild(clubInDanger);
-    });
-  }
-};
+    clubInDanger.appendChild(span);
+    clubsInDangerButtonsContainer.appendChild(clubInDanger);
+  });
 
+}
 
 //—————————THIS IS MY SEARCH BAR CODE!!! —————————————//
 // Make an empty list to store all the clubs from the database
 let clubList = [];
 
-// This function grabs the clubs from the Firestore database and adds them to the clubList array
 export const createClubList = async function () {
-  const databaseItems = await getDocs(collection(db, "clubs")); // Get all the club documents from Firestore
-  const names = document.getElementById("clubs");
-  if (names) names.innerHTML = ""; // If there's a "clubs" element, clear whatever was in it
+  clubList = []; // clear old list
 
-  // Reset and loop through all the club data we got from Firestore
-  clubList = [];
-  databaseItems.forEach((item) => {
-    const data = item.data();
-    const clubName = data?.clubName || "";
-    // Use document ID as the stable identifier (matches usage elsewhere like clubsInDanger)
-    const clubUsername = item.id;
-    if (clubName) {
-      clubList.push({ clubName, clubUsername });
+  const snapshot = await getDocs(collection(db, "clubs")); // Get all club docs
+
+  snapshot.forEach((docSnap) => {
+    const data = docSnap.data();
+    if (data && data.clubName && data.username) {
+      clubList.push({
+        clubName: data.clubName,
+        clubUsername: data.username
+      });
     }
   });
+
+  console.log("Loaded clubs into search:", clubList.length); // debug
 };
+
 
 // This class handles the instant search functionality (like a search bar that shows results as you type)
 class InstantSearch {
@@ -518,44 +225,34 @@ class InstantSearch {
 
   createResultElement(result) {
     const anchor = document.createElement("a");
-    anchor.classList.add("instant-search__result");
-    anchor.href = "#";
+    anchor.classList.add("instant-search__result");  
     anchor.innerHTML = this.options.templateFunction(result);
 
     anchor.addEventListener("click", (event) => {
-      event.preventDefault();
-      // Save the selected club ID and render immediately (no full reload needed)
+      event.preventDefault(); // Prevent default link behavior
+
+      // Save the club username to session storage
+      // Assuming 'result' has a property 'clubUsername' holding that value
       sessionStorage.setItem('adminClub', result.clubUsername);
-      try {
-        // Update input to selected value and hide results
-        if (this.elements?.input) this.elements.input.value = result.clubName;
-        if (this.elements?.resultsContainer) {
-          this.elements.resultsContainer.classList.remove("instant-search__results-container--visible");
-          this.elements.resultsContainer.innerHTML = "";
-        }
-        // Render the admin panel for the selected club
-        if (typeof renderAdminClubInfo === "function") {
-          renderAdminClubInfo();
-        } else {
-          // Fallback: light reload if function not in scope for some reason
-          location.reload();
-        }
-      } catch (e) {
-        console.error(e);
-        location.reload();
-      }
+      // Reload the current page
+      location.reload();
     });
 
     return anchor;
   }
-  
+
 
   // This function actually filters the clubList to find matches based on what was typed
   performSearch(query) {
-    const lowerQuery = query.toLowerCase(); // Make search case-insensitive
-    const results = clubList
-    .filter(club => club.clubName.toLowerCase().includes(lowerQuery))
-    .map(club => ({ clubName: club.clubName, clubUsername: club.clubUsername })); // Return full objects
+    const lowerQuery = query.toLowerCase().trim();
+    if (!lowerQuery) {
+      return Promise.resolve([]);
+    }
+    const queryWords = lowerQuery.split(/\s+/).filter(word => word.length > 0);
+    const results = clubList.filter(club => {
+      const name = club.clubName.toLowerCase();
+      return queryWords.every(word => name.includes(word));
+    }).map(club => ({ clubName: club.clubName, clubUsername: club.clubUsername })); // Return full objects
     return Promise.resolve(results); // Return the results as a promise
   }
 }
@@ -571,27 +268,22 @@ createClubList().then(() => {
   }
 });
 
+// ———— decided to make the admin club info box an onload 
+// function cause im not going to push my luck ——————///
 
 export async function renderAdminClubInfo() {
-  // Ensure DOM is ready before manipulating elements
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', renderAdminClubInfo, { once: true });
-    return;
-  }
+  var clubName = document.getElementById("adminClubName");
+  clubName.innerHTML = "";
+  var clubInfo = document.getElementById("adminaboutClub");
 
-  const clubNameEl = document.getElementById("adminClubName");
-  const clubInfo = document.getElementById("adminaboutClub");
-  if (!clubNameEl || !clubInfo) return;
-  clubNameEl.innerHTML = "";
-
-  const adminClub = sessionStorage.getItem('adminClub');
+  var adminClub = sessionStorage.getItem('adminClub');
   if (adminClub) {
     clubInfo.innerHTML = "";
     const parentDocRef = doc(db, "clubs", adminClub);
     const clubDoc = await getDoc(parentDocRef);
 
     // sets header to the club name
-    clubNameEl.innerHTML = clubDoc.data().clubName;
+    clubName.innerHTML = clubDoc.data().clubName;
 
     // builds editable club fields
     const clubData = clubDoc.data();
@@ -618,7 +310,7 @@ export async function renderAdminClubInfo() {
       editBtn.style.width = "40px";
       editBtn.style.borderRadius = "5px";
 
-      
+
 
       const saveBtn = document.createElement("button");
       saveBtn.textContent = "Save";
@@ -892,7 +584,7 @@ export async function renderAdminClubInfo() {
   InDagerNoticeWrapper.appendChild(InDagerNotice);
   adminInDangerDiv.appendChild(inDangerMessage);
   } 
-  
+
   else {
     console.log("No adminClub set in session storage yet.");
   }
@@ -946,7 +638,7 @@ export async function renderAdminClubInfo() {
     nextMeetingTitle.classList.add('adminMeetingTitle')
     nextMeetingTitle.innerHTML = `Next ${meetingType}`;
     nextMeet.appendChild(nextMeetingTitle);
-    
+
     meetingInfo.innerHTML = `
       <span><strong>Date: </strong> ${nextMeeting.date.toLocaleDateString()}</span>
       <span><strong>Time: </strong> ${nextMeeting.date.toLocaleTimeString()}</span>
@@ -1003,7 +695,7 @@ export async function deleteClub(){
   const clulbUser = sessionStorage.getItem("adminClub");
     if (confirmed) {
       const doubleConfirmed = confirm("Are you 100% sure?");
-  
+
       if (doubleConfirmed) {
         await deleteDoc(doc(db, "clubs", clulbUser));
         location.reload();
@@ -1028,7 +720,7 @@ async function isClubInDanger(username) {
 
   const lastMeetingTimestamp = clubDoc.data().lastMeeting;
   const lastMeetingDate = lastMeetingTimestamp.toDate();
-  
+
   if (lastMeetingDate <= twoMonthsAgo) {
     console.log("true");
     return true;
@@ -1050,7 +742,7 @@ function compareReverseDates(meetingA, meetingB) {
 export async function resetPoints(){
 
   const confirmed = confirm("Are you sure you want reset points?");
-  
+
     if (confirmed) {
       const doubleConfirmed = confirm("Are you super sure?");
       if(doubleConfirmed) {
@@ -1091,3 +783,129 @@ export async function resetPoints(){
       }
     }
 }
+
+
+// ===== Site-wide Announcements (admin-only) =====
+(() => {
+  const COL = "announcements";
+  const MAX_ACTIVE = 3;
+
+  const el = {
+    createBtn: document.getElementById("createAnnouncementBtn"),
+    logBtn: document.getElementById("announcementLogBtn"),
+
+    modal: document.getElementById("announcementModal"),
+    modalTitle: document.getElementById("announcementModalTitle"),
+    msg: document.getElementById("announcementMessage"),
+    start: document.getElementById("announcementStart"),
+    end: document.getElementById("announcementEnd"),
+    saveBtn: document.getElementById("saveAnnouncementBtn"),
+    cancelBtn: document.getElementById("cancelAnnouncementBtn"),
+
+    logModal: document.getElementById("announcementLogModal"),
+    logList: document.getElementById("announcementLogList"),
+    logCloseBtn: document.getElementById("closeAnnouncementLogBtn"),
+  };
+
+  if (!el.createBtn || !el.logBtn) return; // run only on god.html
+
+  const state = { editingId: null };
+
+  function show(node, on) { if (node) node.style.display = on ? "flex" : "none"; }
+  function clearForm() {
+    if (el.msg) el.msg.value = "";
+    if (el.start) el.start.value = "";
+    if (el.end) el.end.value = "";
+    if (el.durationDays) el.durationDays.value = "";
+    state.editingId = null;
+    if (el.modalTitle) el.modalTitle.textContent = "New Announcement";
+  }
+  function nowIso() { return new Date().toISOString(); }
+  function localDTtoISO(v) { if (!v) return null; const d = new Date(v); return isNaN(d) ? null : d.toISOString(); }
+  function isoToLocalDT(iso) {
+    const d = new Date(iso); const p = n => String(n).padStart(2,"0");
+    return `${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())}T${p(d.getHours())}:${p(d.getMinutes())}`;
+  }
+  function escapeHtml(str) { return (str||"").replace(/[&<>"']/g,s=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[s])); }
+
+  function statusOf(a, now=new Date()) {
+    if (a.deleted) return "deleted";
+    if (!a.startAt||!a.endAt) return "invalid";
+    const s=new Date(a.startAt), e=new Date(a.endAt);
+    if (s<=now && now<=e) return a.isActive===false?"inactive":"active";
+    if (now<s) return "upcoming";
+    return "expired";
+  }
+
+  async function getAll() {
+    const snaps = await getDocs(collection(db,COL));
+    const arr=[]; snaps.forEach(s=>arr.push({id:s.id,...s.data()}));
+    return arr;
+  }
+  async function countActive(excludeId=null) {
+    const all=await getAll(); const now=new Date();
+    return all.filter(a=>{
+      if(a.deleted||a.isActive===false) return false;
+      if(excludeId && a.id===excludeId) return false;
+      if(!a.startAt||!a.endAt) return false;
+      const s=new Date(a.startAt), e=new Date(a.endAt);
+      return s<=now && now<=e;
+    }).length;
+  }
+  async function create(payload) { const ref=doc(collection(db,COL)); await setDoc(ref,payload); }
+  async function update(id,patch){ await updateDoc(doc(db,COL,id),patch); }
+  async function remove(id){ await deleteDoc(doc(db,COL,id)); }
+
+  async function onSave() {
+    const message=(el.msg?.value||"").trim();
+    if(!message){ alert("Message cannot be empty."); return; }
+
+    let startISO=localDTtoISO(el.start?.value||"");
+    let endISO=localDTtoISO(el.end?.value||"");
+
+    if(!startISO){ alert("Start date/time is required."); return; }
+    if(new Date(endISO)<new Date(startISO)){ alert("End must be after start."); return; }
+
+    const editing=state.editingId;
+    const willBeActive=(new Date(startISO)<=new Date() && new Date()<=new Date(endISO));
+    if(willBeActive){ const count=await countActive(editing||null); if(count>=MAX_ACTIVE){ alert(`Max ${MAX_ACTIVE} active announcements reached.`); return; } }
+
+    const payload={message,startAt:startISO,endAt:endISO,isActive:true,deleted:false,updatedAt:Date.now(),createdAt:editing?undefined:Date.now()};
+    if(editing){ await update(editing,payload); } else { await create(payload); }
+
+    clearForm(); show(el.modal,false); if(el.logModal && el.logModal.style.display!=="none") await renderLog();
+  }
+
+  async function renderLog() {
+    if(!el.logList) return;
+    el.logList.innerHTML="Loading…";
+    const items=await getAll(); const now=new Date();
+    const order={active:0,upcoming:1,expired:2,deleted:3,invalid:4};
+    items.sort((a,b)=>{const sa=order[statusOf(a,now)]??9,sb=order[statusOf(b,now)]??9; if(sa!==sb)return sa-sb; return (b.startAt||"").localeCompare(a.startAt||"");});
+    el.logList.innerHTML="";
+    items.forEach(a=>{
+      const st=statusOf(a,now);
+      const wrap=document.createElement("div"); wrap.className="announcement-log-item";
+      const msgLine=document.createElement("div"); msgLine.innerHTML=`<strong>Message:</strong> ${escapeHtml(a.message||"")}`;
+      const datesLine=document.createElement("div"); const s=a.startAt?new Date(a.startAt).toLocaleString():"—"; const e=a.endAt?new Date(a.endAt).toLocaleString():"—"; datesLine.innerHTML=`<strong>Dates:</strong> ${s} → ${e} <span class="badge">${st}</span>`;
+      const actions=document.createElement("div");
+
+      const editBtn=document.createElement("button"); editBtn.textContent="Edit"; editBtn.onclick=()=>{ state.editingId=a.id; if(el.modalTitle) el.modalTitle.textContent="Edit Announcement"; clearForm(); if(el.msg) el.msg.value=a.message||""; if(el.start) el.start.value=a.startAt?isoToLocalDT(a.startAt):""; if(el.end) el.end.value=a.endAt?isoToLocalDT(a.endAt):""; show(el.modal,true); };
+
+      const toggleBtn=document.createElement("button"); toggleBtn.textContent=(st==="active"||a.isActive)?"Deactivate":"Activate"; toggleBtn.onclick=async()=>{ const willActive=(new Date(a.startAt)<=new Date()&&new Date()<=new Date(a.endAt)); if((!a.isActive||st!=="active")&&willActive){const cnt=await countActive(a.id); if(cnt>=MAX_ACTIVE){alert(`Max ${MAX_ACTIVE} active announcements reached.`);return;} } await update(a.id,{isActive:!(a.isActive===false),updatedAt:Date.now()}); await renderLog(); };
+
+      const delBtn=document.createElement("button"); delBtn.textContent="Delete"; delBtn.onclick=async()=>{ if(!confirm("Delete permanently?"))return; await remove(a.id); await renderLog(); };
+
+      actions.appendChild(editBtn); actions.appendChild(toggleBtn); actions.appendChild(delBtn);
+      wrap.appendChild(msgLine); wrap.appendChild(datesLine); wrap.appendChild(actions);
+      el.logList.appendChild(wrap);
+    });
+  }
+
+  // Wire up events
+  el.createBtn.onclick=()=>{ clearForm(); show(el.modal,true); };
+  el.cancelBtn.onclick=()=>{ clearForm(); show(el.modal,false); };
+  el.saveBtn.onclick=onSave;
+  el.logBtn.onclick=async()=>{ await renderLog(); show(el.logModal,true); };
+  el.logCloseBtn.onclick=()=>show(el.logModal,false);
+})();
