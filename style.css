@@ -331,6 +331,34 @@ resized to fit nicely beside the calendar -- */
     font-family: 'Inter', sans-serif;
 }
 
+.view-toggle {
+  display: flex;             
+  justify-content: center;
+  gap: 8px;
+  padding: 0 12px 12px;
+}
+
+.view-toggle__btn {
+    border: 1px solid rgb(141, 13, 24);
+    background-color: #ffffff;
+    color: rgb(141, 13, 24);
+    padding: 6px 16px;
+    border-radius: 18px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.18s ease;
+}
+
+.view-toggle__btn:hover {
+    background-color: rgba(141, 13, 24, 0.1);
+}
+
+.view-toggle__btn.is-active {
+    background-color: rgb(141, 13, 24);
+    color: #ffffff;
+}
+
 .btn {
     cursor: pointer;
 }
@@ -429,7 +457,15 @@ resized to fit nicely beside the calendar -- */
     height: 510px;
     padding-bottom: 5px;
 }
+
+.days--week {
+    gap: 12px;
+    flex-wrap: nowrap;
+    height: 600px;
+}
+
 .actualday {
+    position: relative;
     display: flex;
     flex-direction: column;
     align-items: stretch; /* let inner wrapper fill width */
@@ -448,12 +484,31 @@ resized to fit nicely beside the calendar -- */
     box-sizing: border-box;  /* keep widths consistent */
 }
 
+.actualday--week {
+    flex: 1 1 calc(100% / 7 - 12px);
+    width: auto;
+    min-width: 0;
+    height: auto;
+}
+
 /* sticky day number at top of each cell */
 .day-number {
+  position: sticky;
+  top: 0;
+  background: transparent;
+  padding: 2px 0;
+  z-index: 2;
+  text-align: center;  /* centers inline content inside */
+}
+
+
+.day-weekday {
     position: sticky;
-    top: 0;
-    background: transparent; /* inherit by default */
-    padding: 2px 0;
+    top: 24px;
+    font-size: 12px;
+    color: #666;
+    background: #fff;
+    padding-bottom: 4px;
     z-index: 1;
 }
 
