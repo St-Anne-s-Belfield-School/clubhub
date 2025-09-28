@@ -694,9 +694,9 @@ resized to fit nicely beside the calendar -- */
   background-color: #f5f5f5;
   color: #222;
   font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
-  font-size: 1.4vw; /* smaller font */
+  font-size: 18px;
   user-select: none;
-  position: relative; /* ensure it doesnâ€™t overlap content */
+  position: relative; /* ensure it doesn't overlap content */
   z-index: 0;
 }
 
@@ -892,6 +892,11 @@ resized to fit nicely beside the calendar -- */
   color: #2C3E50;
   width: 95vw;
   font-size: 1.05rem;
+}
+
+#outlook, #meetingLog {
+  max-height: 500px;
+  overflow-y: scroll;
 }
 
 #bio {
@@ -1556,7 +1561,7 @@ option {
 /* ADMIN CLUBS IN DANEGER ECT> */
 
 .clubsInDangerWrapper {
-    width: 22%; display: flex; flex-direction: column; gap: 24px; margin-top: 40px;
+    width: 22%; display: flex; flex-direction: column; gap: 15px; margin-top: 20px;
 }
 
 /* Base Panel Style (shared by both panels)      */
@@ -1878,7 +1883,7 @@ option {
 .adminWrap {
   display: flex;
   justify-content: center;
-  width: 100%;
+  max-width: 100vw;
   padding: 25px;
   padding-bottom: 0;
   background: white;
@@ -2147,5 +2152,520 @@ background-color: #eeeeee;
     width: 96vw;
     max-width: 560px;
     font-size: 15px;
+  }
+}
+/* ================================
+   Club Directory — Mobile/Tablet
+   ================================ */
+
+/* Medium screens: switch to an auto-fit grid with tidy gaps */
+@media (max-width: 900px) {
+  .clubDirectoryBox {
+    margin: 20px auto;
+    max-width: 100vw;
+    padding: 0 12px;
+  }
+
+  .directoryTitle {
+    font-size: clamp(18px, 2.4vw, 22px);
+    margin-bottom: 16px;
+    padding: 6px 0;
+  }
+
+  /* Use grid so cards line up cleanly and reflow nicely */
+  .clubsBox {
+    display: grid; /* overrides flex */
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 12px 12px;
+    padding: 12px;
+    margin-left: 0; /* remove big left offset on smaller screens */
+  }
+
+  /* Make cards fill their grid cell cleanly */
+  .clubButton {
+    min-width: 0;      /* allow shrinking within grid */
+    max-width: none;   /* let grid manage the width */
+    width: 100%;
+    box-sizing: border-box;
+  }
+}
+
+/* Phones: tighter spacing, 2 columns (then 1 column on very small) */
+@media (max-width: 700px) {
+  .clubDirectoryBox {
+    margin: 14px auto;
+    padding: 0 12px;
+  }
+
+  .clubsBox {
+    grid-template-columns: repeat(2, minmax(0, 1fr)); /* two-up grid */
+    gap: 10px;
+    padding: 10px 8px;
+  }
+
+  .clubButton {
+    padding: 12px 10px;                 /* smaller, still tappable */
+    border-radius: 12px;
+    font-size: clamp(14px, 3.4vw, 16px);
+    line-height: 1.25;
+    min-height: 44px;                   /* touch target */
+    /* Prevent overflow/cutoff */
+    white-space: normal;
+    word-break: break-word;
+    overflow: visible;
+  }
+
+  /* Tone down hover effects on mobile to reduce visual jump */
+  .clubButton:hover {
+    transform: translateY(-2px) scale(1.01);
+    box-shadow: 0 3px 6px rgba(0,0,0,0.15);
+  }
+  .clubButton::before { display: none; } /* remove sheen to save paint time */
+}
+
+/* Very small phones: single column for max readability */
+@media (max-width: 420px) {
+  .clubsBox {
+    grid-template-columns: 1fr; /* one-up list */
+    gap: 8px;
+  }
+
+  .clubButton {
+    padding: 10px 10px;
+    font-size: 14px;
+    border-radius: 10px;
+  }
+}
+
+/* Accessibility: reduce motion if user prefers */
+@media (prefers-reduced-motion: reduce) {
+  .clubButton,
+  .clubButton:hover {
+    transition: none !important;
+    animation: none !important;
+    transform: none !important;
+  }
+}
+/* ================================
+   ADMIN PAGE — MOBILE/TABLET LAYER
+   Append at end of file
+   ================================ */
+
+/* ---------- Global tweaks that won’t affect desktop ---------- */
+
+/* Make the floating site banner fit on smaller screens */
+@media (max-width: 900px) {
+  .site-announcement-banner {
+    top: 12px;
+    width: 94vw;
+    max-width: none;
+    padding: 14px 16px;
+    border-radius: 8px;
+    box-shadow: 0 6px 16px rgba(0,0,0,0.18);
+  }
+  .site-announcement-banner .banner-text { font-size: 14px; }
+  .site-announcement-banner .banner-close { font-size: 20px; padding: 6px 8px; }
+}
+
+/* Tablets: stack columns, widen searchable area, compact spacing */
+@media (max-width: 900px) {
+  /* Overall page wrap becomes vertical */
+  .adminWrap {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 16px;
+    padding: 16px;
+  }
+
+  /* Left column → full width */
+  .clubsInDangerWrapper {
+    width: 100%;
+    margin-top: 0px;
+    order: 1;
+  }
+
+  /* Vertical divider becomes a horizontal rule */
+  .adminLineTwo {
+    width: 100%;
+    height: 2px;
+    margin: 12px 0 4px 0;
+    align-self: auto;
+  }
+
+  /* Right column → full width */
+  .mainAdminBox {
+    width: 100%;
+    margin: 0;
+    padding: 0 4px 0;
+    order: 2;
+  }
+
+  /* “Clubs in Danger” buttons: auto-fit grid */
+  .clubsInDangerButtons {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 10px;
+  }
+  .clubsInDangerButtons button {
+    width: 100%;
+  }
+
+  /* Reset panel height: let content define height */
+  .resetPointsDiv { 
+    height: auto; 
+    align-items: center; 
+    justify-content: center;
+    border-top: transparent;
+    border-left: transparent;
+    border-right: transparent;
+    padding: 0;
+  }
+
+  /* Search block: full width, taller input for touch */
+  .search-container { width: 85%; }
+  .instant-search {
+    width: 100%;
+    max-width: 720px;
+    margin: 10px auto;
+  }
+  .instant-search__input-container {
+    min-height: 44px;      /* bigger tap target */
+    height: auto;
+    padding: 8px 12px;
+  }
+  .instant-search__input {
+    padding: 6px 8px 6px 36px; /* leaves room for icon */
+    font-size: 16px;
+  }
+  .instant-search__icon {
+    width: 22px;
+    height: 22px;
+    left: 10px;
+  }
+
+  /* Cards: breathe on tablet, keep single column (desktop 2-col kept by your 1100px rule) */
+  .adminClubInfoWrapper { margin: 8px 0; padding-top: 10px; }
+  .adminaboutClub,
+  .adminNextMeeting,
+  .adminInDangerDiv,
+  .adminPastMeetings {
+    padding: 16px;
+    padding-top: 56px; /* for header strip */
+  }
+
+  /* Avoid nested scroll on tablet unless truly needed */
+  .adminPastMeetings { max-height: 55vh; }
+}
+
+/* Phones: tighter layout, single column, full-width buttons */
+@media (max-width: 700px) {
+
+  /* Left column panels */
+  .announcement-controls { min-height: 0; }
+  .clubsInDanger { 
+    max-height: none; justify-content: center; align-items: center;     height: auto; 
+    align-items: center; 
+    justify-content: center;
+    border-top: transparent;
+    border-left: transparent;
+    border-right: transparent;
+    padding: 0;
+    max-height: 250px;
+  }
+  .clubsInDangerButtons {
+    grid-template-columns: 1fr;   /* one per row */
+    gap: 8px;
+  }
+  .clubsInDangerButtons button {
+    padding: 12px 14px;
+    font-size: 15px;
+    border-radius: 6px;
+  }
+
+  /* Right column cards: no internal scroll on phones */
+  .adminaboutClub,
+  .adminNextMeeting,
+  .adminInDangerDiv,
+  .adminPastMeetings {
+    padding: 14px;
+    padding-top: 52px;
+  }
+  .adminPastMeetings,
+  .adminNextMeeting {
+    max-height: 250px;
+    overflow-y: scroll;  /* let page scroll, not the card */
+  }
+
+  /* Meeting chips/cards inside lists */
+  .meetingInfoCard {
+    height: auto;
+    overflow: visible;
+    padding: 12px;
+    width: 100%;
+  }
+
+  /* Title row */
+  .adminClubName {
+    font-size: clamp(20px, 6vw, 26px);
+    margin: 2px 8px;
+    text-align: center;
+  }
+  .adminLine { width: 30%; }
+
+  /* Action buttons become full-width, comfortable tap size */
+  .DCB-GCB-Wrapper {
+    flex-direction: column;
+    align-items: center;
+    gap: 5px;
+    margin: 14px 0 8px;
+  }
+  .deleteClubButton,
+  .adminGoToClubButton,
+  .resetPointsButton {
+    width: 90%;
+    min-height: 48px;
+    margin: 0;
+    margin-bottom: 5px;
+    font-size: 16px;
+    letter-spacing: .5px;
+  }
+
+  /* Tone down heavy hover effects on mobile to avoid layout shifts */
+  .deleteClubButton:hover { transform: none; }
+  .adminGoToClubButton:hover span { animation: none; }
+  .deleteClubButton .spark { display: none !important; } /* hide sparks on phones */
+
+  /* Modals: edge-to-edge, bigger controls */
+  .announcement-modal-content {
+    margin: 8vh auto;
+    width: 94vw;
+    max-width: none;
+    max-height: 84vh;
+    border-radius: 10px;
+    padding: 16px;
+  }
+  .announcement-modal-content input,
+  .announcement-modal-content textarea {
+    font-size: 16px;
+    padding: 10px 12px;
+  }
+  .announcement-buttons {
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+  .announcement-buttons button,
+  #clearAnnouncementLogBtn,
+  #closeAnnouncementLogBtn {
+    width: 100%;
+    min-height: 44px;
+    font-size: 16px;
+    border-radius: 10px;
+  }
+
+  .adminLineThree{display: none;}
+
+  /* Announcement log list: more compact spacing */
+  #announcementLogList { gap: 10px; }
+  #announcementLogList .announcement-log-item { padding: 12px; }
+  #announcementLogList .announcement-actions { gap: 8px; }
+}
+
+/* Accessibility: reduce motion */
+@media (prefers-reduced-motion: reduce) {
+  .adminGoToClubButton::before,
+  .adminGoToClubButton:hover span,
+  .deleteClubButton,
+  .deleteClubButton:hover,
+  .deleteClubButton .spark,
+  .site-announcement-banner,
+  .announcement-modal-content {
+    animation: none !important;
+    transition: none !important;
+  }
+}
+
+/* ================================
+   CLUB DASH — MOBILE/TABLET LAYER
+   Append at end of file
+   ================================ */
+
+/* ---------- Tablets (≤ 900px) ---------- */
+@media (max-width: 900px) {
+
+  /* Space + readable scale */
+  .clubInfo { gap: 16px; padding: 16px; }
+
+  /* Lay out "About" + "Quick Facts" side-by-side when possible,
+     then auto-wrap cleanly */
+  .basicClubInfoBox {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 12px;
+    width: 100vw;
+  }
+
+  .clubInfoBox {
+    padding: 16px;
+  }
+
+  .hTwoCDash {
+    font-size: clamp(1.2rem, 2.6vw, 1.4rem);
+    padding: 12px 16px;
+    margin: -16px -16px 12px -16px; /* match reduced padding */
+  }
+
+  /* Meeting list: modest internal scroll on tablet */
+  #meetingListScrollable {
+    max-height: 55vh;
+    overflow: auto;
+  }
+
+  /* Meeting row: give the content more room */
+  .meetingDiv {
+    gap: 8px;
+    padding: 8px 10px;
+    margin: 10px 6px;
+  }
+
+  .meetingBox { width: 100%; }
+  .editMeetingDiv {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+  }
+
+  .meetingEdit {
+    min-height: 40px;
+    padding: 8px 12px;
+    font-size: 14px;
+  }
+
+  .addButton {
+    width: 100%;
+    height: auto;
+    padding: 12px;
+    font-size: 16px;
+  }
+}
+
+/* ---------- Phones (≤ 700px) ---------- */
+@media (max-width: 700px) {
+
+  #outlook, #meetingLog {
+  max-height: 300px;
+  overflow-y: scroll;
+  width: 100vw;
+  }
+
+  .clubInfo { gap: 12px; padding: 12px; }
+
+  /* Stack "About" + "Quick Facts" */
+  .basicClubInfoBox {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+
+  .clubInfoBox {
+    padding: 14px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+  }
+  /* Avoid hover zoom causing layout jump on touch */
+  .clubInfoBox:hover { transform: none; }
+
+  .hTwoCDash {
+    font-size: clamp(1.05rem, 4.5vw, 1.25rem);
+    padding: 10px 14px;
+    margin: -14px -14px 10px -14px;
+    line-height: 1.25;
+  }
+
+  /* Let the whole page scroll; no nested scroll in cards */
+  #meetingListScrollable {
+    max-height: none;
+    overflow: visible;
+  }
+
+  /* Meeting entries become vertical cards */
+  .meetingDiv {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+    padding: 10px 12px;
+    margin: 8px 4px;
+    border-radius: 10px;
+  }
+
+  .meetingBox { width: 100%; }
+
+  .editMeetingDiv {
+    width: 100%;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    justify-content: stretch;
+  }
+
+  .meetingEdit {
+    flex: 1 1 46%;
+    min-width: 140px;
+    padding: 10px 12px;
+    font-size: 14px;
+    border-radius: 10px;
+  }
+
+  .addEventDiv { padding: 8px; }
+  .addButton {
+    width: 100%;
+    padding: 12px 14px;
+    font-size: 16px;
+    border-radius: 10px;
+  }
+
+  /* Inputs/Textareas inside cards: full width, comfy tap target */
+  .attendance,
+  .locationEditBox,
+  .bioEditBox,
+  .recapEditBox {
+    width: 100%;
+    max-width: 100%;
+    font-size: 16px;
+    padding: 10px 12px;
+  }
+  .attendance { max-width: 100%; text-align: left; }
+
+  /* Radio group: easier to tap, wraps nicely */
+  .radio-container {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin: 6px 10px 6px 0;
+    padding-left: 26px; /* keep custom circle aligned */
+    font-size: 15px;
+  }
+  .custom-radio { width: 18px; height: 18px; }
+
+  /* Modals: edge-to-edge and taller content area */
+  .confModal { padding: 16px; }
+  .confModalContent {
+    width: min(92vw, 520px);
+    padding: 18px;
+    max-height: 85vh;
+  }
+  .confbtn {
+    width: 100%;
+    min-height: 44px;
+    font-size: 16px;
+    border-radius: 10px;
+  }
+
+  /* Small text utilities */
+  h4 { margin-top: 8px; margin-bottom: 4px; }
+  .meetingAddT { font-size: 1.05rem; }
+  .eventQuestion { margin: 8px 0 4px; }
+  .bioQF { display: block; padding: 8px; margin: 0 0 8px 0; }
+
+  .editHeaderControls, .headerEditBtn{
+    display: none;
   }
 }
