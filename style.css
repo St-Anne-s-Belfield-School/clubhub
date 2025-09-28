@@ -9,14 +9,14 @@ body {
 
 /* Header with background image */
 .header {
-    padding: 100px 20px; /* gives enough vertical space without issues */
+    padding: clamp(60px, 12vw, 100px) 20px; /* scales header height for smaller screens */
     color: white;
     background-color: rgb(0, 0, 0);
     background-image: url("images/Backgroud.png");
     background-size: cover;
     background-position: center; /* centers the background image */
     text-align: center;
-    font-size: 2.5vw;
+    font-size: clamp(26px, 2.8vw, 44px);
     box-sizing: border-box; /* includes padding in size calculations */
 }
 
@@ -30,6 +30,9 @@ body {
     display: flex;
     justify-content: center;
     align-items: center;
+    gap: 12px;
+    padding: 0px 20px;
+    flex-wrap: wrap;
     background-color: rgb(141, 13, 24);
 }
 
@@ -40,85 +43,75 @@ body {
     display: none;
 }
 
-/* customizes the indavidual buttons in the nav bar */
+/* customizes the individual buttons in the nav bar */
 .button{
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
     cursor: pointer;
-    padding-top: 7px; padding-bottom: 7px; padding-left: 1vw;  padding-right: 1vw;
-    background-color: transparent; border-color: transparent;
-    font-family: 'Inter', sans-serif; font-size: 1.3vw;
-    color: white; text-decoration: none;
+    padding: 20px clamp(14px, 3vw, 20px);
+    background-color: transparent;
+    border: 1px solid transparent;
+    font-family: 'Inter', sans-serif;
+    font-size: clamp(15px, 1.6vw, 20px);
+    color: white;
+    text-decoration: none;
+    transition: background-color 0.18s ease, color 0.18s ease;
 }
 
 /* hover animation */
 .button:hover {
     background-color: white; color:rgb(141, 13, 24);
 }
-/* --- end of navigation bar --- */
 
-.rankings{
-    display: flex; flex-direction: row;
-    align-items: center; justify-content: center;  
-}
-/* creates the encapsilationg flex
- box for the ranking+ description */
-.rankingsBox {
-    position: relative;
-    margin: 3.5vw; margin-top: 3vw; margin-bottom: 3vw; width: 40%;
-    color: white;
+/* Provide a mobile-friendly layout for the rankings cards */
+.rankings {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: clamp(16px, 4vw, 24px);
+    padding: clamp(16px, 5vw, 32px) clamp(12px, 5vw, 32px);
+    align-items: stretch;
 }
 
-/* description of what the rankings mean */
+.rankingsBox:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.12);
+}
+
+/* ranking title card header */
 .rankingTitle {
-    position: relative; /* Needed for positioning the pseudo-element */
-    margin-top: 0;
-    padding: 20px;
+    background: rgb(141, 13, 24);
+    color: #ffffff;
+    margin: 0;
+    padding: 16px 20px;
     text-align: center;
-    justify-content: center;
-    background-color: #ffffff;
-    color: black;
-    font-size: 25px;
+    font-size: clamp(18px, 2vw, 22px);
     font-weight: 750;
-    /* Remove full-width bottom border */
+    letter-spacing: 0.3px;
 }
 
-.rankingTitle::after {
-    content: "";
-    position: absolute;
-    bottom: 0;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 48%; /* 75% width of the element */
-    height: 2px;
-    background-color: rgb(141, 13, 24); /* Signature red */
-    border-radius: 1px;
-}
-
-.rankingsBox::after {
-    content: "";
-    position: absolute;
-    bottom: 0;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 48%; /* 75% width of the element */
-    height: 2px;
-    background-color: rgb(141, 13, 24); /* Signature red */
-    border-radius: 1px;
-}
-
-/* makes the flex box where
- the rankings will be listed */
+/* Inner list area reuses same background */
 .topTenList{
-    display: flex; flex-direction: column; align-items: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
     background-color: #ffffff;
-    padding: 10px; margin-bottom: 5px;
+    padding: 12px 16px 16px;
 }
 
 /* sets the style for ranking 1-3 */
 .topThree{
-    display: flex;  align-items: center; justify-content: center; 
-    gap: 10px;  /* Adds space between images and text */
-    color: black; font-size: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;  /* Adds space between images and text */
+    color: black;
+    width: 100%;
+    font-size: clamp(16px, 1.6vw, 18px);
     text-align: center;
+    padding: 10px 6px;
+    border-bottom: 1px solid #eee;
+    border-radius: 8px;
 }
 
 /* adds restrictions to the graphics 1-3 rank*/
@@ -248,8 +241,6 @@ body {
 
 
 /* this is the overaching flex box for the following ellements
---- END CALENDAR will mark the end of this! */
-/* this is the overarching flex box for the following elements
 --- END CALENDAR will mark the end of this! */
 .schedule {
     display: flex; /* fixed from 'flexbox' */
@@ -687,6 +678,7 @@ resized to fit nicely beside the calendar -- */
   border-bottom: 2px solid rgb(141, 13, 24); /* match ranking title underline */
   padding-bottom: 6px;
 }
+
 
 /* --- END CALENDAR --- */
 
@@ -1977,3 +1969,183 @@ background-color: #eeeeee;
     height: 25px;
 }
 
+/* ================================
+   MOBILE OVERRIDES  (≤ 700px)
+   Paste at the very end of your CSS
+   ================================ */
+@media (max-width: 700px) {
+
+  #monthViwToggleBtn{
+    display: none;
+  }
+  #weekViwToggleBtn{
+    display: none;
+  }
+  /* Overall spacing */
+  .schedule { margin: 12px; }
+
+  .calendarTitle {
+    margin: 12px;
+    margin-bottom: 6px;
+    font-size: clamp(22px, 5vw, 28px);
+    border-radius: 8px;
+  }
+
+  /* Let the page scroll; avoid nested scrolling on phones */
+  .calendar {
+    margin-left: 0;
+    width: 100%;
+    height: auto;
+    max-height: none;
+    overflow: visible;
+    background-color: transparent;
+  }
+
+  /* Header stays visible; bigger tap targets */
+  .Cheader {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    background: #fff;
+    border-bottom: 1px solid rgba(141,13,24,.2);
+    margin: 8px 12px;
+    padding: 8px 4px;
+  }
+
+  #month-year {
+    font-size: clamp(18px, 5vw, 22px);
+    text-align: center;
+    flex: 1;
+  }
+
+  .arrow { width: 44px; height: 44px; }
+  .arrow i { width: 8px; height: 8px; border-top-width: 4px; border-left-width: 4px; }
+
+  /* View toggle centered & sticky under header */
+  .view-toggle {
+    position: sticky;
+    top: 52px; /* below the header */
+    z-index: 9;
+    margin: 0 12px 8px;
+    padding: 6px 0 8px;
+    justify-content: center;
+    gap: 6px;
+    background: #fff;
+  }
+
+  .view-toggle__btn {
+    padding: 8px 14px;
+    font-size: 14px;
+    border-radius: 999px;
+  }
+
+  /* Hide weekday strip on small screens to save space */
+  .weekdays { display: none !important; }
+
+  /* ===== Month view on phones: card grid (2 columns) ===== */
+  .days:not(.days--week) {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+    height: auto;
+    margin: 8px 12px 16px;
+  }
+
+  .actualday {
+    width: auto; 
+    height: auto;
+    min-height: 96px;
+    overflow: hidden; /* disable inner scroll inside a small card */
+    display: grid;
+    grid-template-columns: 64px 1fr;   /* date column | events column */
+    grid-auto-rows: min-content;
+    align-items: start;
+    padding: 8px;
+    gap: 6px 10px;
+  }
+
+  /* Date (left column) */
+  .day-number {
+    position: static;          /* no sticky in stacked cards */
+    display: block;
+    grid-column: 1;
+    justify-self: center;
+    align-self: start;
+    text-align: center;        /* keep centered */
+    font-weight: 700;
+    margin-top: 2px;
+  }
+
+  .day-weekday {
+    position: static;
+    grid-column: 1;
+    font-size: 12px;
+    color: #222222;
+    justify-self: center;
+  }
+
+  /* Events (right column) */
+  .day-events {
+    grid-column: 2;
+    align-items: stretch;
+    max-width: 100%;
+    overflow-x: auto;
+  }
+
+  /* Today highlight */
+  .actualday.today {
+    border-color: rgb(141,13,24);
+    box-shadow: 0 0 0 2px rgba(141,13,24,.15) inset;
+  }
+
+  .actualday.today .day-weekday{
+    background: rgb(141,13,24);
+    color: #fff;
+  }
+
+  .actualday.today .day-number {
+    background: rgb(141,13,24);
+    color: #fff;
+    padding: 4px 10px;
+    border-radius: 999px;
+  }
+
+  .actualday.fade { background: #fafafa; }
+  .actualday.fade .day-number { color: #888; }
+
+  .event {
+    width: 100%;
+    font-size: 13px;
+    padding: 10px 12px;
+    margin-top: 6px;
+  }
+
+  /* ===== Week view on phones: vertical "rolodex" ===== */
+  .days.days--week {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    height: auto;
+    margin: 8px 12px 16px;
+  }
+
+  .actualday.actualday--week {
+    width: 100%;
+    min-height: 84px;
+    display: grid;
+    grid-template-columns: 72px 1fr;  /* date | events */
+    padding: 10px;
+    gap: 6px 12px;
+    overflow: hidden; /* avoid nested scrolls */
+  }
+
+  .actualday--week .day-weekday { display: block; }
+
+  /* Modal: full-width feel, readable text */
+  .eventInfoModal { padding: 16px; }
+  .eventInfoModalContent {
+    width: 96vw;
+    max-width: 560px;
+    font-size: 15px;
+  }
+}
