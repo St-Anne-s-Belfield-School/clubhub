@@ -126,20 +126,63 @@ export async function addMeetings() {
 
 function initializeViewToggle() {
     const buttons = document.querySelectorAll('.view-toggle__btn');
+
+    // set initial active state from current viewMode
+    const setActive = () => {
+        buttons.forEach((btn) => {
+            btn.classList.toggle('is-active', btn.dataset.view === viewMode);
+        });
+    };
+
     buttons.forEach((btn) => {
-        const isActive = btn.dataset.view === viewMode;
-        btn.classList.toggle('is-active', isActive);
         btn.addEventListener('click', () => {
-            if (btn.dataset.view === viewMode) return;
-            viewMode = btn.dataset.view;
+            const nextView = btn.dataset.view;
+            if (nextView === viewMode) return;
+
+            // On mobile, Month is disabled. Guard here.
+            const isMobile = window.matchMedia('(max-width: 700px)').matches;
+            if (isMobile && nextView === 'month') return;
+
+            viewMode = nextView;
             sessionStorage.setItem('calendarView', viewMode);
-            buttons.forEach((innerBtn) => {
-                innerBtn.classList.toggle('is-active', innerBtn.dataset.view === viewMode);
-            });
+            setActive();
             renderCalendar(currentDate);
         });
     });
+
+    //  "week-only" on small screens;  Month option on desktop
+    const mql = window.matchMedia('(max-width: 700px)');
+
+    const enforceViewportRules = () => {
+        const monthBtn = document.querySelector('.view-toggle__btn[data-view="month"]');
+
+        if (mql.matches) {
+            // MOBILE: hide Month button and force Week if needed
+            if (monthBtn) monthBtn.style.display = 'none';
+            if (viewMode !== 'week') {
+                viewMode = 'week';
+                sessionStorage.setItem('calendarView', 'week');
+                setActive();
+                renderCalendar(currentDate);
+            }
+        } else {
+            // DESKTOP: show Month button again
+            if (monthBtn) monthBtn.style.display = '';
+            setActive(); // keep classes in sync
+        }
+    };
+
+    // run once after buttons exist, and on viewport changes
+    enforceViewportRules();
+    // modern browsers
+    if (mql.addEventListener) {
+        mql.addEventListener('change', enforceViewportRules);
+    } else {
+        // Safari < 14 fallback
+        mql.addListener(enforceViewportRules);
+    }
 }
+
 
 
 // Call the addMeetings function to populate events before rendering the calendar
