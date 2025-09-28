@@ -940,10 +940,12 @@ export async function editVerification() {
           const editBtn = document.createElement("button");
           editBtn.textContent = "Edit Header";
           editBtn.classList.add("meetingEdit");
+          editBtn.classList.add("headerEditBtn");
 
           const removeBtn = document.createElement("button");
           removeBtn.textContent = "Remove Image";
           removeBtn.classList.add("meetingEdit");
+          removeBtn.classList.add("headerEditBtn");
 
           // Inline panel: URL field + font color + confirm
           const panel = document.createElement("div");
