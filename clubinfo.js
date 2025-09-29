@@ -34,25 +34,49 @@ export const showClubs = async function () {
   L2Container.innerHTML = "";
   L3Container.innerHTML = "";
 
+  const levelContainers = {
+    L1: L1Container,
+    L2: L2Container,
+    L3: L3Container,
+  };
+
+  const clubsByLevel = {
+    L1: [],
+    L2: [],
+    L3: [],
+  };
+
   databaseItems.forEach((item) => {
     const clubData = item.data();
+    if (clubsByLevel[clubData.type]) {
+      clubsByLevel[clubData.type].push(clubData);
+    }
+  });
+
+  const createClubTile = (clubData) => {
     const clubTile = document.createElement("button");
     clubTile.classList.add("clubButton");
     clubTile.innerHTML = `<span>${clubData.clubName}</span>`;
 
     clubTile.onclick = function () {
       location.replace("clubDash.html");
-      sessionStorage.setItem("club", clubData.username);
+      sessionStorage.setItem("club", clubData.clubName);
     };
 
-    // Append to the correct section based on type
-    if (clubData.type === "L1") {
-      L1Container.appendChild(clubTile);
-    } else if (clubData.type === "L2") {
-      L2Container.appendChild(clubTile);
-    } else if (clubData.type === "L3") {
-      L3Container.appendChild(clubTile);
+    return clubTile;
+  };
+
+  Object.entries(clubsByLevel).forEach(([level, clubs]) => {
+    const container = levelContainers[level];
+    if (!container) {
+      return;
     }
+
+    clubs
+      .sort((a, b) => (a.clubName || "").localeCompare(b.clubName || "", undefined, { sensitivity: "base" }))
+      .forEach((clubData) => {
+        container.appendChild(createClubTile(clubData));
+      });
   });
 };
 
