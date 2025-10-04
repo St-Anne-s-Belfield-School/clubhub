@@ -410,22 +410,34 @@ async function displayMeetingInfo(id){
     var meetingInfo = document.createElement("div");
     var editMeetingDiv = document.createElement("div"); 
     // Create and style button for deleting the meeting
-    var editbutton = document.createElement("button");
-    editbutton.innerHTML = "Delete"; 
+    var deleteButton = document.createElement("button");
+    var editButton = document.createElement("button");
+    deleteButton.innerHTML = "Delete";
+    editButton.innerHTML = "Edit";
+    deleteButton.type = "button";
+    editButton.type = "button";
+    deleteButton.dataset.meetingId = meeting.meetingID;
+    editButton.dataset.meetingId = meeting.meetingID;
     // Adds appropriate classes for styling
     meetingInfo.classList.add('meetingBox');
     editMeetingDiv.classList.add('editMeetingDiv');
     meetingDiv.classList.add('meetingDiv');
-    editbutton.classList.add('meetingEdit');
+    deleteButton.classList.add('meetingEdit');
+    editButton.classList.add('meetingEdit');
+    editButton.classList.add('meetingEditPrimary');
 
-    // When clicked, it triggers the showDeleteModal with meetingID
-    editbutton.onclick = function() {
+    // When clicked, triggers delete confirmation or edit modal
+    deleteButton.onclick = function() {
       showDeleteModal(meeting.meetingID, id); 
     };
+    editButton.onclick = function() {
+      showFutureEditModal(meeting, id);
+    };
 
-    // Append button and info to the meeting div
+    // Append buttons and info to the meeting div
     if(sessionStorage.getItem("canEdit") == "true"){
-      editMeetingDiv.appendChild(editbutton);
+      editMeetingDiv.appendChild(editButton);
+      editMeetingDiv.appendChild(deleteButton);
     }
     meetingDiv.appendChild(meetingInfo);
     meetingDiv.appendChild(editMeetingDiv);
@@ -741,6 +753,126 @@ async function deleteMeeting(meetingID, id) {
     await deleteDoc(databaseItem);
     console.log("deleted!");
     location.reload();
+}
+
+function formatDateForInput(date) {
+  if (!(date instanceof Date) || Number.isNaN(date.getTime())) {
+    return "";
+  }
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
+
+function formatTimeForInput(date) {
+  if (!(date instanceof Date) || Number.isNaN(date.getTime())) {
+    return "";
+  }
+  const hours = String(date.getHours()).padStart(2, "0");
+  const minutes = String(date.getMinutes()).padStart(2, "0");
+  return `${hours}:${minutes}`;
+}
+
+function showFutureEditModal(meeting, clubId) {
+  const modal = document.getElementById("updateMeetModal");
+  if (!modal) {
+    console.warn("Update meeting modal not found.");
+    return;
+  }
+
+  modal.style.display = "flex";
+  modal.dataset.clubId = clubId || "";
+  modal.dataset.meetingId = meeting?.meetingID || "";
+
+  const dateInput = document.getElementById("edit-meeting-date");
+  const timeInput = document.getElementById("edit-meeting-time");
+  const descInput = document.getElementById("edit-meeting-desc");
+  const locationInput = document.getElementById("edit-meeting-location");
+  const eventYes = document.getElementById("edit-event-yes");
+  const eventNo = document.getElementById("edit-event-no");
+
+  if (dateInput) {
+    dateInput.value = formatDateForInput(meeting?.date);
+  }
+  if (timeInput) {
+    timeInput.value = formatTimeForInput(meeting?.date);
+  }
+  if (descInput) {
+    descInput.value = meeting?.description || "";
+  }
+  if (locationInput) {
+    locationInput.value = meeting?.location || "";
+  }
+  if (eventYes && eventNo) {
+    if (meeting?.isAnEvent) {
+      eventYes.checked = true;
+    } else {
+      eventNo.checked = true;
+    }
+  }
+}
+
+export function hideFutureEditModal() {
+  const modal = document.getElementById("updateMeetModal");
+  if (!modal) {
+    return;
+  }
+  modal.style.display = "none";
+  modal.dataset.clubId = "";
+  modal.dataset.meetingId = "";
+}
+
+export async function saveFutureMeetingUpdates() {
+  const modal = document.getElementById("updateMeetModal");
+  if (!modal) {
+    alert("Unable to update meeting at this time.");
+    return;
+  }
+
+  const clubId = modal.dataset.clubId || sessionStorage.getItem("club");
+  const meetingId = modal.dataset.meetingId;
+  if (!clubId || !meetingId) {
+    alert("Missing meeting information.");
+    return;
+  }
+
+  const meetingDate = document.getElementById("edit-meeting-date")?.value;
+  const meetingTime = document.getElementById("edit-meeting-time")?.value;
+  const meetingDesc = document.getElementById("edit-meeting-desc")?.value?.trim();
+  const meetingLocation = document.getElementById("edit-meeting-location")?.value?.trim();
+  const isAnEvent = document.querySelector('input[name="edit-event"]:checked')?.value === "yes";
+
+  if (!meetingDate || !meetingTime || !meetingDesc || !meetingLocation) {
+    alert("Please fill in all fields before saving.");
+    return;
+  }
+
+  const [year, month, day] = meetingDate.split("-").map(Number);
+  const [hours, minutes] = meetingTime.split(":").map(Number);
+  const updatedDate = new Date(year, month - 1, day, hours, minutes, 0, 0);
+
+  if (Number.isNaN(updatedDate.getTime())) {
+    alert("Please provide a valid date and time.");
+    return;
+  }
+
+  try {
+    const clubRef = doc(db, "clubs", clubId);
+    const meetingRef = doc(collection(clubRef, "all-meetings"), meetingId);
+    await updateDoc(meetingRef, {
+      date: Timestamp.fromDate(updatedDate),
+      description: meetingDesc,
+      location: meetingLocation,
+      isAnEvent: isAnEvent
+    });
+
+    hideFutureEditModal();
+    location.reload();
+  } catch (error) {
+    console.error("Failed to update meeting", error);
+    alert("Failed to update meeting. Please try again.");
+  }
 }
 
 async function editMeetingInfo(meetingID, id) {
