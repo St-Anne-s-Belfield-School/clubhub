@@ -8,9 +8,11 @@
     <script src="club.js"></script>
     <title>Club Dashboard</title>
     <script type="module">
-        import {displayClubInfo, editVerification} from './clubinfo.js';
+        import {displayClubInfo, editVerification, saveFutureMeetingUpdates, hideFutureEditModal} from './clubinfo.js';
         window.displayClubInfo = displayClubInfo ;
         window.editVerification=editVerification;
+        window.saveFutureMeetingUpdates=saveFutureMeetingUpdates;
+        window.hideFutureEditModal=hideFutureEditModal;
         editVerification();
         displayClubInfo();
       </script>
@@ -54,6 +56,44 @@
         </div>
     </div>
     <!-- END OF DELETE CONF MODAL!!!! -->
+
+    <!-- Update existing meeting modal -->
+    <div id="updateMeetModal" class="confModal" style="display: none;" data-club-id="" data-meeting-id="">
+        <div class="confModalContent">
+            <p class="meetingAddT">Update meeting information</p>
+
+            <label for="edit-meeting-date">Meeting date:</label>
+            <input type="date" id="edit-meeting-date">
+            <label for="edit-meeting-time">Meeting time:</label>
+            <input type="time" id="edit-meeting-time">
+
+            <label for="edit-meeting-desc">Meeting description:</label>
+            <textarea id="edit-meeting-desc"></textarea>
+
+            <label for="edit-meeting-location">Meeting location:</label>
+            <textarea id="edit-meeting-location"></textarea>
+
+            <div class="edit-modal-toggle">
+                <span>Is this a meeting or an event?</span>
+                <label class="radio-container">
+                    <input type="radio" name="edit-event" id="edit-event-yes" value="yes">
+                    <span class="custom-radio"></span> Event
+                </label>
+
+                <label class="radio-container">
+                    <input type="radio" name="edit-event" id="edit-event-no" value="no">
+                    <span class="custom-radio"></span> Meeting
+                </label>
+            </div>
+
+            <div class="edit-modal-actions">
+                <button type="button" class="meetingEdit meetingEditPrimary" onclick="saveFutureMeetingUpdates()">Save changes</button>
+                <button type="button" class="meetingEdit" onclick="hideFutureEditModal()">Cancel</button>
+            </div>
+
+        </div>
+    </div>
+    <!-- END OF UPDATE MEETING MODAL -->
 
     <!-- Create new event modal -->
     <div id="createMeetModal" class="confModal" style="display: none;" data-club-id="">
