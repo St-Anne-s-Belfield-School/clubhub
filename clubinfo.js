@@ -480,6 +480,8 @@ async function displayMeetingInfo(id){
     showEditModal(id); 
   };
 
+  var unupdatedMeetings = 0;
+
   // Loop through past meetings and create div elements for each.
   pastMeetings.forEach((meeting) => {
     var meetingDiv = document.createElement("div");
@@ -579,7 +581,10 @@ async function displayMeetingInfo(id){
     `;
 
     // NEW: show private notes only for admins/leaders
-    if (sessionStorage.getItem("isGod") === "true" || sessionStorage.getItem("isLeader") === "true") {
+    if (sessionStorage.getItem("canEdit") == "true") {
+      if (meeting.attendance < 1){
+        unupdatedMeetings +=1;
+      }
       const safeNotes = meeting.leaderNotes || "";
       meetingInfo.innerHTML += `
         <div class="infoContainer">
@@ -592,6 +597,13 @@ async function displayMeetingInfo(id){
     // Append the meeting div to the "meetingListScrollable" section
     meetingListScrollable.appendChild(meetingDiv);
   });
+
+  if (unupdatedMeetings > 1){
+    alert("You have "+unupdatedMeetings+" meetings without attendance recorded. Please record attendance and any other notes you had from them.");
+  }
+  if (unupdatedMeetings == 1){
+    alert("You havent updated on of your past meetings... You need to record attendance and any other notes you had from this meeting.");
+  }
 }
 
 // simple helperfuntion to compare dates durring sorting
