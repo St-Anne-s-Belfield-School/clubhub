@@ -80,7 +80,7 @@ currentDate.setHours(0, 0, 0, 0);
 let today = new Date(); // The current date.
 today.setHours(0, 0, 0, 0);
 
-let viewMode = sessionStorage.getItem("calendarView") || "month"; // Store selected view mode
+let viewMode = sessionStorage.getItem("calendarView") || "week"; // Store selected view mode
 
 let nav = 0; // Navigation state for calendar (previous or next month)
 let events = [];
