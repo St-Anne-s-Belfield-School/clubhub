@@ -2,7 +2,7 @@ import { initializeApp } from
 "https://www.gstatic.com/firebasejs/10.0.0/firebase-app.js";
 // TODO: import libraries for Cloud Firestore Database
 // https://firebase.google.com/docs/firestore
-import { getFirestore, collection, addDoc, getDocs,getDoc, doc, updateDoc, deleteDoc, setDoc, Timestamp } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-firestore.js";
+import { getFirestore, collection, collectionGroup, addDoc, getDocs,getDoc, doc, updateDoc, deleteDoc, setDoc, Timestamp, query, where, orderBy } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-firestore.js";
 import {updatePoints} from "./leaderboardScore.js";
 import { getAuth, createUserWithEmailAndPassword, onAuthStateChanged , signInWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-auth.js";
 
@@ -647,6 +647,17 @@ async function createMeeting(id) {
 
   const firstDateTime = atLocalTime(meetingDate, meetingTime);
 
+  const overlappingMeetingsCount = await getNearbyMeetingsCount(firstDateTime, id);
+  if (overlappingMeetingsCount >= 3) {
+    const formattedDate = firstDateTime.toLocaleDateString();
+    const formattedTime = firstDateTime.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+    const proceed = confirm(`There are currently ${overlappingMeetingsCount} meetings by other clubs within ±2 hours of ${formattedTime} on ${formattedDate}. Do you still want to add this meeting?`);
+    if (!proceed) {
+      console.log("Meeting creation canceled due to nearby meeting density.");
+      return;
+    }
+  }
+
   // Build list of occurrence Date objects (always include the first)
   let occurrences = [firstDateTime];
 
@@ -725,6 +736,45 @@ window.saveMeeting = function () {
   const id = modal?.dataset?.clubId || sessionStorage.getItem("club");
   createMeeting(id);
 };
+
+async function getNearbyMeetingsCount(targetDateTime, currentClubId) {
+  try {
+    const windowStart = new Date(targetDateTime.getTime() - 2 * 60 * 60 * 1000);
+    const windowEnd = new Date(targetDateTime.getTime() + 2 * 60 * 60 * 1000);
+    const startTimestamp = Timestamp.fromDate(windowStart);
+    const endTimestamp = Timestamp.fromDate(windowEnd);
+
+    const clubsSnapshot = await getDocs(collection(db, "clubs"));
+    let count = 0;
+
+    for (const clubDoc of clubsSnapshot.docs) {
+      if (clubDoc.id === currentClubId) {
+        continue;
+      }
+
+      const clubMeetingsRef = collection(doc(db, "clubs", clubDoc.id), "all-meetings");
+      const meetingsQuery = query(
+        clubMeetingsRef,
+        where("date", ">=", startTimestamp),
+        where("date", "<=", endTimestamp)
+      );
+
+      const nearbyMeetings = await getDocs(meetingsQuery);
+      count += nearbyMeetings.size;
+
+      if (count >= 3) {
+        break;
+      }
+    }
+
+    console.log(`[Meeting check] Found ${count} overlapping meeting(s) in ±2 hour window.`);
+    return count;
+  } catch (error) {
+    console.error("Failed to check nearby meetings", error);
+    alert("We couldn't verify other meetings right now. Please check the console for details.");
+    return 0;
+  }
+}
 
 
 async function showDeleteModal(meetingID, id) {
