@@ -385,7 +385,8 @@ async function displayMeetingInfo(id){
       location: meeting.data().location,
       meetingID: meeting.id,
       attendance: meeting.data().attendance,
-      isAnEvent: meeting.data().isAnEvent
+      isAnEvent: meeting.data().isAnEvent,
+      leaderNotes: meeting.data().leaderNotes || ""   // NEW: private notes
     };
 
     // Check if the meeting's date is in the future or past and push to appropriate array.
@@ -546,11 +547,10 @@ async function displayMeetingInfo(id){
       meetingDiv.appendChild(editMeetingDiv);
     }
 
-        var meetingType = "Meeting";
+    var meetingType = "Meeting";
     if (meeting.isAnEvent == true){
       meetingType = "Event";
     }
-
 
     // Populate meeting details for past meetings
     meetingInfo.innerHTML = `
@@ -577,6 +577,17 @@ async function displayMeetingInfo(id){
         <span id="recap-${meeting.meetingID}">${meeting.description}</span>
       </div>
     `;
+
+    // NEW: show private notes only for admins/leaders
+    if (sessionStorage.getItem("isGod") === "true" || sessionStorage.getItem("isLeader") === "true") {
+      const safeNotes = meeting.leaderNotes || "";
+      meetingInfo.innerHTML += `
+        <div class="infoContainer">
+          <span>Leader Notes (private):</span>
+          <span id="private-${meeting.meetingID}">${safeNotes}</span>
+        </div>
+      `;
+    }
 
     // Append the meeting div to the "meetingListScrollable" section
     meetingListScrollable.appendChild(meetingDiv);
@@ -934,16 +945,22 @@ async function editMeetingInfo(meetingID, id) {
   const locationElement = document.getElementById(`location-${meetingID}`);
   //const isEventElement = document.getElementById(`type-${meetingID}`);
 
+  // NEW: grab private notes element if visible
+  const privateElement = document.getElementById(`private-${meetingID}`); // may be null
+  const canEditPrivate = !!privateElement && (sessionStorage.getItem("isGod") === "true" || sessionStorage.getItem("isLeader") === "true");
+
   // Get the text content of these elements
   const attendanceCount = attendanceElement.textContent.replace('Attendance : ', ''); // Removing the part after? "Attendance : " part
   const meetingRecap = recapElement.textContent.replace('Meeting recap: ', ''); // Removing "Meeting recap: " part
   //const isEvent = isEventElement.textContent.replace('Meeting type: ', '');// Removing "Meeting recap: " part
   const meetingSpot = locationElement.textContent.replace('Location: ', ''); // Removing "Meeting recap: " part
+  const privateText = privateElement ? privateElement.textContent : "";       // NEW: existing private notes
 
   // Create text input and textarea elements
   const attendanceInput = document.createElement('input');
   const recapInput = document.createElement('textarea');
   const locationInput = document.createElement('input');
+  let privateInput; // NEW: will be created only if allowed
   //const isEventInput = document.createElement('input');
   attendanceInput.classList.add("attendance");
   recapInput.classList.add("recapEditBox");
@@ -951,15 +968,26 @@ async function editMeetingInfo(meetingID, id) {
   recapInput.id = 'recapInput';
   locationInput.id = 'locationInput'
 
+  // If allowed, create textarea for private notes
+  if (canEditPrivate) {
+    privateInput = document.createElement('textarea');
+    privateInput.classList.add("recapEditBox");
+    privateInput.id = 'privateInput';
+  }
+
   // Set the value of the input to the current text of the paragraph
   attendanceInput.value = attendanceCount; // Assigning the text value to the input
   recapInput.value = meetingRecap; // Assigning the text value to the textarea
   locationInput.value = meetingSpot;
+  if (canEditPrivate) privateInput.value = privateText;
 
   // Replace the paragraph elements with the input boxes
   attendanceElement.parentNode.replaceChild(attendanceInput, attendanceElement);
   recapElement.parentNode.replaceChild(recapInput, recapElement);
   locationElement.parentNode.replaceChild(locationInput, locationElement);
+  if (canEditPrivate && privateElement) {
+    privateElement.parentNode.replaceChild(privateInput, privateElement); // NEW: swap in editable private notes
+  }
 
   // saving info:
   const saveButtonElement = document.getElementById(`saveButton-${meetingID}`);
@@ -985,11 +1013,14 @@ async function editMeetingInfo(meetingID, id) {
     // Convert the string to an integer
     const newAttendance = parseInt(newAttendanceString, 10); // base 10/normal
     const newRecap = recapInput.value;
+    const newPrivate = canEditPrivate && typeof privateInput !== "undefined" ? privateInput.value : undefined; // NEW
+
     //checks to see if the new attendance value works (not zero)
     if (!isNaN(newAttendance) && newRecap){
       await updateDoc(databaseItem,{
         attendance: newAttendance,
         description: newRecap,
+        ...(typeof newPrivate !== "undefined" ? { leaderNotes: newPrivate } : {}) // NEW: include only if allowed/present
       });
 
       const MD = databaseItemSnapshot.data().date;
@@ -1018,6 +1049,7 @@ async function editMeetingInfo(meetingID, id) {
     location.reload();
   };
 }
+
 
 // LOTS OF ACOUNT EDITING/ RULES FUNCTIONS
 
