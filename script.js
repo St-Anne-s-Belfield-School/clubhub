@@ -830,7 +830,7 @@ export async function resetPoints(){
   function escapeHtml(str) { return (str||"").replace(/[&<>"']/g,s=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[s])); }
 
   function statusOf(a, now=new Date()) {
-    if (a.deleted) return "deleted";
+    if (a.removed) return "removed";
     if (!a.startAt||!a.endAt) return "invalid";
     const s=new Date(a.startAt), e=new Date(a.endAt);
     if (s<=now && now<=e) return a.isActive===false?"inactive":"active";
@@ -846,7 +846,7 @@ export async function resetPoints(){
   async function countActive(excludeId=null) {
     const all=await getAll(); const now=new Date();
     return all.filter(a=>{
-      if(a.deleted||a.isActive===false) return false;
+      if(a.removed||a.isActive===false) return false;
       if(excludeId && a.id===excludeId) return false;
       if(!a.startAt||!a.endAt) return false;
       const s=new Date(a.startAt), e=new Date(a.endAt);
@@ -871,10 +871,13 @@ export async function resetPoints(){
     const willBeActive=(new Date(startISO)<=new Date() && new Date()<=new Date(endISO));
     if(willBeActive){ const count=await countActive(editing||null); if(count>=MAX_ACTIVE){ alert(`Max ${MAX_ACTIVE} active announcements reached.`); return; } }
 
-    const payload={message,startAt:startISO,endAt:endISO,isActive:true,deleted:false,updatedAt:Date.now(),createdAt:editing?undefined:Date.now()};
+    const payload={message,startAt:startISO,endAt:endISO,isActive:true,removed:false,updatedAt:Date.now(),createdAt:editing?undefined:Date.now()};
+    if (editing) delete payload.createdAt;
+
     if(editing){ await update(editing,payload); } else { await create(payload); }
 
     clearForm(); show(el.modal,false); if(el.logModal && el.logModal.style.display!=="none") await renderLog();
+
   }
 
 async function renderLog() {
@@ -885,7 +888,7 @@ async function renderLog() {
   const now = new Date();
 
   // sort by status, then by startAt desc
-  const order = { active: 0, upcoming: 1, expired: 2, deleted: 3, invalid: 4 };
+  const order = { active: 0, upcoming: 1, expired: 2, removed: 3, invalid: 4 };
   items.sort((a, b) => {
     const sa = order[statusOf(a, now)] ?? 9;
     const sb = order[statusOf(b, now)] ?? 9;
@@ -896,7 +899,7 @@ async function renderLog() {
   el.logList.innerHTML = "";
 
   items.forEach(a => {
-    const st = statusOf(a, now); // "active" | "upcoming" | "expired" | "deleted" | "invalid"
+    const st = statusOf(a, now); // "active" | "upcoming" | "expired" | "taken down" | "invalid"
 
     // card
     const wrap = document.createElement("div");
@@ -921,30 +924,33 @@ async function renderLog() {
     const actions = document.createElement("div");
     actions.classList.add("announcement-actions");
 
-    const editBtn = document.createElement("button");
-    editBtn.textContent = "Edit";
-    editBtn.classList.add("log-btn", "edit-btn");
-    editBtn.onclick = () => {
-      state.editingId = a.id;
-      if (el.modalTitle) el.modalTitle.textContent = "Edit Announcement";
-      if (el.msg)   el.msg.value   = a.message || "";
-      if (el.start) el.start.value = a.startAt ? isoToLocalDT(a.startAt) : "";
-      if (el.end)   el.end.value   = a.endAt ? isoToLocalDT(a.endAt) : "";
-      show(el.modal, true);
-    };
+    // Only show Edit if announcement is active or upcoming
+    if (st === "active" || st === "upcoming") {
+      const editBtn = document.createElement("button");
+      editBtn.textContent = "Edit";
+      editBtn.classList.add("log-btn", "edit-btn");
 
-    const delBtn = document.createElement("button");
-    delBtn.textContent = "Delete";
-    delBtn.classList.add("log-btn", "delete-btn");
-    delBtn.onclick = async () => {
-      if (!confirm("Delete this announcement?")) return;
-      // treat Delete like Deactivate (soft delete so it stays in history)
-      await update(a.id, { deleted: true, updatedAt: Date.now() });
-      await renderLog();
-    };
+      const delBtn = document.createElement("button");
+      delBtn.textContent = "Take Down";
+      delBtn.classList.add("log-btn", "delete-btn");
+      editBtn.onclick = () => {
+        state.editingId = a.id;
+        if (el.modalTitle) el.modalTitle.textContent = "Edit Announcement";
+        if (el.msg)   el.msg.value   = a.message || "";
+        if (el.start) el.start.value = a.startAt ? isoToLocalDT(a.startAt) : "";
+        if (el.end)   el.end.value   = a.endAt ? isoToLocalDT(a.endAt) : "";
+        show(el.modal, true);
+      };
+      actions.appendChild(editBtn);
+      delBtn.onclick = async () => {
+        if (!confirm("Do you want to permanently take down this announcement?")) return;
+        await update(a.id, { removed: true, updatedAt: Date.now() });
+        await renderLog();
+      };
+      actions.appendChild(delBtn);
+    }
 
-    actions.appendChild(editBtn);
-    actions.appendChild(delBtn);
+
 
     wrap.appendChild(msgLine);
     wrap.appendChild(datesLine);
@@ -961,7 +967,7 @@ async function clearAnnouncementHistory() {
 
   // delete items that are: deleted OR invalid OR ended in the past
   const toDelete = items.filter(a => {
-    if (a.deleted) return true;
+    if (a.removed) return true;
     if (!a.startAt || !a.endAt) return true;
     const end = new Date(a.endAt);
     return end < now; // strictly in the past gets wiped
