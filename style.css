@@ -1006,6 +1006,11 @@ h4 {
   transition: all 0.2s ease;
 }
 
+.meetingEditPrimary {
+  background-color: rgb(179, 3, 21);
+  border: 1px solid rgb(179, 3, 21);
+}
+
 h2 .meetingEdit {
   margin-left: 20px;
   font-size: 0.8em;
@@ -1484,7 +1489,7 @@ option {
 #announcementLogList .badge.active   { background:#22a06b; color:#fff; }
 #announcementLogList .badge.upcoming { background:#2b7de9; color:#fff; }
 #announcementLogList .badge.expired  { background:#9e9e9e; color:#fff; }
-#announcementLogList .badge.deleted  { background:#d12323; color:#fff; }
+#announcementLogList .badge.removed  { background:#9e9e9e; color:#fff; }
 
 /* Actions row */
 #announcementLogList .announcement-actions {
