@@ -699,6 +699,19 @@ resized to fit nicely beside the calendar -- */
   position: relative; /* ensure it doesn't overlap content */
   z-index: 0;
 }
+.ContactButton{
+  position: relative;
+  margin-left: auto; 
+  background-color: rgb(141, 13, 24);
+  border-radius: 15px;
+  font-weight: bold;
+  font-size: 14px;
+}
+.ContactButton:hover{
+  background-color: rgb(111, 13, 24);
+  color: #ffffff;
+  transition: 0.8s ease;
+}
 
 .logos {
   position: relative;
