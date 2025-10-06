@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Fixed the type attribute in the link tag -->
+    <link rel="stylesheet" type="text/css" href="style.css">
+    <link rel="stylesheet" type="text/css" href="contactPage.css">
+    <script type="text/javascript"
+        src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js">
+    </script>
+    <script type="text/javascript">
+    (function(){
+        emailjs.init({
+            publicKey: "niRAlJauitM41Zk_6",
+        });
+    })();
+    </script>
+    <script src="contactUs.js"></script>
+    <title>Contact Page</title>
+
+<link rel='stylesheet' id='google-fonts-css' href='https://fonts.googleapis.com/css2?family=Public+Sans:ital,wght@0,100..900;1,100..900&#038;display=swap' media='all' />
+</head>
+<body>
+   <div class="navC">
+       <!-- <a class="button" href="#calendar">Calendar</a> -->
+        <button class="button navCbutton" onClick = "location.replace('index.html');">Home</button>
+   </div>
+    <br>
+
+    <header class="hero-media-banner hero-media-banner--media-overlay hero-media-banner--media-fit-cover hero-media-banner--media-align-center hero-media-banner--bkg-red section--has-paper-border" data-random-border-width="98rem" data-comname="hero-media-banner">
+        <div class="wrap wrap--wide">
+            <div class="l-media-banner">
+                <div class="l-media-banner-body">
+                    <header class="hero-header section-header--limited">
+                        <h1 class="wp-block-heading">Contact Us</h1>
+                    </header>
+
+                    <div class="hero-content">
+                        <p>Any issues or requests?<br>Please let us know!</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="l-media-banner-bkg">
+            <div class="hero-media-banner-bkg">
+                <img fetchpriority="high" decoding="async" class="hero-media-banner-bkg-image--desktop wp-image wp-image-1924" src="https://photos.smugmug.com/2025-26/Upper-School/First-Day-of-School/i-jf4w6XS/0/LRfvMvxrDDXjLL4n4L7dZww2pV9zgDhqHLS755HPt/X4/DSC08350-X4.jpg" width="726" height="573" alt="" srcset="https://photos.smugmug.com/2025-26/Upper-School/First-Day-of-School/i-jf4w6XS/0/LRfvMvxrDDXjLL4n4L7dZww2pV9zgDhqHLS755HPt/X4/DSC08350-X4.jpg 726w, https://photos.smugmug.com/2025-26/Upper-School/First-Day-of-School/i-jf4w6XS/0/LRfvMvxrDDXjLL4n4L7dZww2pV9zgDhqHLS755HPt/X4/DSC08350-X4.jpg 300w, https://photos.smugmug.com/2025-26/Upper-School/First-Day-of-School/i-jf4w6XS/0/LRfvMvxrDDXjLL4n4L7dZww2pV9zgDhqHLS755HPt/X4/DSC08350-X4.jpg 15w" sizes="(max-width: 726px) 100vw, 726px" />
+            </div>
+        </div>
+        <button type="button" class="hero-button-down">
+            <svg fill="none" height="56" viewBox="0 0 56 56" width="56" xmlns="http://www.w3.org/2000/svg">
+                <circle cx="28" cy="28" fill="rgb(116, 14, 24)" r="28"></circle>
+                <g fill="#fff">
+                <path d="m37.4376 18.379c-.4833-.5053-1.2668-.5053-1.7501 0l-7.7873 8.1415-7.7876-8.1415c-.4833-.5053-1.2668-.5053-1.7501 0s-.4833 1.3243 0 1.8296l8.6625 9.0563c.2416.2525.5584.3788.8752.3788s.6333-.1263.8749-.3788l8.6625-9.0563c.4833-.5053.4833-1.3243 0-1.8296z"></path>
+                <path d="m37.4376 29.379c-.4833-.5053-1.2668-.5053-1.7501 0l-7.7873 8.1415-7.7876-8.1415c-.4833-.5053-1.2668-.5053-1.7501 0s-.4833 1.3243 0 1.8296l8.6625 9.0563c.2416.2525.5584.3788.8752.3788s.6333-.1263.8749-.3788l8.6625-9.0563c.4833-.5053.4833-1.3243 0-1.8296z"></path>
+                </g>
+            </svg>
+            <span class="vh">Scroll Down</span>
+        </button></header>
+
+
+
+    <section class="section section--content section--medium is-footer-disabled color-option-2 section--has-paper-border" data-random-border-width="98rem" data-comname="section-content"><div class="wrap wrap--limited">
+    <header class="section-header section-header--limited">
+    <h2 class="wp-block-heading is-style-heading--divider">issues and Requests</h2>
+    </header>
+
+
+
+<form id="issueForm">
+    <div class="form-group">
+    <label for="name">Name</label>
+    <input type="text" id="name" name="name" required>
+    </div>
+    <div class="form-group">
+    <label for="email">Email</label>
+    <input type="email" id="email" name="email" required>
+    </div>
+    <label for="title">Issue or Request Title:</label>
+    <input type="text" id="title" name="title" required>
+    <label for="type"> Type:</label>
+    <select id="type" name="type" required>
+        <option value="">Select an issue/request type</option>
+        <option value="technical">Technical Issue</option>
+        <option value="featureRequest">Feature Request</option>
+        <option value="other">Other</option>
+    </select>
+    <label for="message">Message:</label>
+    <textarea id="message" name="message" rows="5" required></textarea>
+    <div class="subBox">
+        <button type="button" class="submit-btn" onclick="sendMail()">Submit</button>
+    </div>
+</form>
+
+
+    <footer class="section-footer section-header--limited">
+    <p></p>
+    </footer>
+    </div></section>
+
+
+<!-- Footer -->
+    <div class="footer">
+        <div class="logos">
+            <img class="logo" src="images/stab_logo.webp" alt="logo">
+        </div>
+        <div class="devSplit">
+            <div>Developer:</div>
+            <div>Kate R. '26</div>
+        </div>
+    </div>
+</body>
+</html>
