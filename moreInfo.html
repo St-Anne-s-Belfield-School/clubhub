@@ -52,6 +52,7 @@
               <option value="one">1</option>
               <option value="two">2</option>
               <option value="three">3</option>
+              <option value="four">4</option>
        </select>
        <!-- where the new blanks populate; VERY important -->
        <div id="moreOptions">
@@ -222,6 +223,64 @@
             document.getElementById("moreOptions").appendChild(email3Label);
             document.getElementById("moreOptions").appendChild(email3);
         }
+        else if(number == "four"){
+          var leaderOne = document.createElement('label');
+          var leaderTwo = document.createElement('label');
+          var leaderThree = document.createElement('label');
+          var leaderFour = document.createElement('label');
+            console.log("four");
+            leaderOne.innerHTML="Leader 1 Name:";
+            leaderTwo.innerHTML="Leader 2 Name:";
+            leaderThree.innerHTML="Leader 3 Name:";
+            leaderFour.innerHTML="Leader 4 Name:";
+            document.getElementById("moreOptions").appendChild(document.createElement("br"));
+            document.getElementById("moreOptions").appendChild(leaderOne);
+            var inp = document.createElement("input");
+            inp.setAttribute("id", "leader1");
+            document.getElementById("moreOptions").appendChild(inp);
+            var email1Label = document.createElement('label');
+            email1Label.innerHTML = "Contact Email:";
+            var email1 = document.createElement('input');
+            email1.setAttribute('id', 'email1');
+            document.getElementById("moreOptions").appendChild(email1Label);
+            document.getElementById("moreOptions").appendChild(email1);
+
+            document.getElementById("moreOptions").appendChild(document.createElement("br"));
+            document.getElementById("moreOptions").appendChild(leaderTwo);
+            var inp2 = document.createElement("input");
+            inp2.setAttribute("id", "leader2");
+            document.getElementById("moreOptions").appendChild(inp2);
+            var email2Label = document.createElement('label');
+            email2Label.innerHTML = "Contact Email:";
+            var email2 = document.createElement('input');
+            email2.setAttribute('id', 'email2');
+            document.getElementById("moreOptions").appendChild(email2Label);
+            document.getElementById("moreOptions").appendChild(email2);
+
+            document.getElementById("moreOptions").appendChild(document.createElement("br"));
+            document.getElementById("moreOptions").appendChild(leaderThree);
+            var inp3 = document.createElement("input");
+            inp3.setAttribute("id", "leader3");
+            document.getElementById("moreOptions").appendChild(inp3);
+            var email3Label = document.createElement('label');
+            email3Label.innerHTML = "Contact Email:";
+            var email3 = document.createElement('input');
+            email3.setAttribute('id', 'email3');
+            document.getElementById("moreOptions").appendChild(email3Label);
+            document.getElementById("moreOptions").appendChild(email3);
+
+            document.getElementById("moreOptions").appendChild(document.createElement("br"));
+            document.getElementById("moreOptions").appendChild(leaderFour);
+            var inp4 = document.createElement("input");
+            inp4.setAttribute("id", "leader4");
+            document.getElementById("moreOptions").appendChild(inp4);
+            var email4Label = document.createElement('label');
+            email4Label.innerHTML = "Contact Email:";
+            var email4 = document.createElement('input');
+            email4.setAttribute('id', 'email4');
+            document.getElementById("moreOptions").appendChild(email4Label);
+            document.getElementById("moreOptions").appendChild(email4);
+        }
 }
 
 function meetingFrequency(){
@@ -269,7 +328,7 @@ function meetingFrequency(){
     <br><br/>
   <div class="tagBox">
   <label for="tags">Tags</label>
-  <!-- data-select-all = false makes it so selecting all the tags is not an option; just wouldn't make sense in this context; multiple data-multi-select sets the type of HTML feature to a multi-select dropdown-->
+  <!-- data-select-all = false makes it so selecting all the tags is not an option; just wouldn't makes ense in this context; multiple data-multi-select sets the type of html feature to a multi-select dropdown-->
   <select id="tags" name="tags" data-placeholder="Select Tags" data-select-all="false" multiple data-multi-select>
     <option value="affinity group">sports</option>
     <option value="arts">arts</option>
