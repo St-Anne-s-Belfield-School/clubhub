@@ -606,7 +606,8 @@ export async function renderAdminClubInfo() {
       meetingID: meeting.id,
       attendance: meeting.data().attendance,
       location: meeting.data().location,
-      isAnEvent: meeting.data().isAnEvent
+      isAnEvent: meeting.data().isAnEvent,
+      leaderNotes: meeting.data().leaderNotes ?? ""
     };
     // Gets today's date to compare meetings.
     let today = new Date();
@@ -680,6 +681,7 @@ export async function renderAdminClubInfo() {
       <span><strong>Attendance:</strong> ${pastMeeting.attendance}</span>
       <span><strong>Type:</strong> ${meetingType}</span>
       <span><strong>Meeting recap:</strong> ${pastMeeting.description}</span>
+      <span><strong>Leader notes:</strong> ${pastMeeting.leaderNotes ?? ""}</span>
     `;
 
     // Append the meeting div to the "meetingLog" section
