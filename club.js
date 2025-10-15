@@ -51,8 +51,8 @@ export const register = async function(user, pass){
 
       console.log(user);
   // saving username across pages
-  sessionStorage.setItem("username", user);
-  sessionStorage.setItem("password", pass)
+  localStorage.setItem("username", user);
+  localStorage.setItem("password", pass)
   // switches page to more information page beyond registration page
   window.location.href="moreInfo.html";
     
@@ -68,80 +68,141 @@ export const register = async function(user, pass){
   
 }
 
+export const deleteIncompleteClub = async function () {
+  const username = localStorage.getItem("username");
+
+  if (!username) {
+    return;
+  }
+
+  try {
+    await deleteDoc(doc(db, "clubs", username));
+    console.warn(`Deleted incomplete club submission for ${username}.`);
+  } catch (error) {
+    console.error("Failed to delete incomplete club submission:", error);
+  }
+};
+
 //onclick function
 export const moreInfo = async function(){
+  const username = localStorage.getItem("username");
+  const password = localStorage.getItem("password");
 
-  // if made it this far, then username does not exist, so sign up proceeds and creates new document named username wtih two fields, for username and password
-  await setDoc(doc(db, "clubs", sessionStorage.getItem("username")), {
-          username: sessionStorage.getItem("username"),
-          password: sessionStorage.getItem("password")
-        });
-  // getDoc(docRef)
-  // .then((docSnapshot) => {
-  //   if (docSnapshot.exists()) {
-  //     // Document exists
-  //     console.log("username exists");
-  //     alert("Username already exists. Choose new username.");
-  //     return;
-  //   } 
-  //     // Document does not exist
-  //     console.log("username is available");
-  //     
-
-  // adds leaders to "leaderList" depending on which dropdown chosen/generated
-  var leaderList = [];
-  var contactList = [];
-  if (document.getElementById("number").value == "one"){
-    leaderList.push(document.getElementById("leader1").value);
-    contactList.push(document.getElementById("email1").value || "");
-  }
-  else if (document.getElementById("number").value == "two"){
-    leaderList.push(document.getElementById("leader1").value);
-    contactList.push(document.getElementById("email1").value || "");
-    leaderList.push(document.getElementById("leader2").value);
-    contactList.push(document.getElementById("email2").value || "");
-  }
-  else if (document.getElementById("number").value == "three"){
-    leaderList.push(document.getElementById("leader1").value);
-    contactList.push(document.getElementById("email1").value || "");
-    leaderList.push(document.getElementById("leader2").value);
-    contactList.push(document.getElementById("email2").value || "");
-    leaderList.push(document.getElementById("leader3").value);
-    contactList.push(document.getElementById("email3").value || "");
+  if (!username || !password) {
+    alert("Your session has expired. Please register again.");
+    await deleteIncompleteClub();
+    return;
   }
 
-  // adds meetingTime to meetingTime depending on whether dropdown selection or "other" selectiojn
-  var meetingTime  = "";
-  if (document.getElementById("meeting").value == "other"){
-    meetingTime = document.getElementById("inpM").value;
-  }
-  else{
-    meetingTime = document.getElementById("meeting").value;
+  const clubNameInput = document.getElementById("clubName")?.value.trim();
+  const leaderSelection = document.getElementById("number")?.value;
+  const meetingSelection = document.getElementById("meeting")?.value;
+  const meetingOtherInput = document.getElementById("inpM")?.value.trim();
+  const typeSelection = document.getElementById("typeSelection")?.value;
+  const memberCountInput = document.getElementById("memberCount")?.value.trim();
+  const facultyAdvisorInput = document.getElementById("facultyAdvisor")?.value.trim() || "";
+  const bioInput = document.getElementById("bio")?.value.trim();
+  const driveShareLinkInput = document.getElementById("driveShareLink")?.value.trim();
+  const storedTags = sessionStorage.getItem("tags");
+  const tags = storedTags ? JSON.parse(storedTags) : [];
+
+  const leaderList = [];
+  const contactList = [];
+
+  if (leaderSelection === "one") {
+    leaderList.push(document.getElementById("leader1")?.value.trim() || "");
+    contactList.push(document.getElementById("email1")?.value.trim() || "");
+  } else if (leaderSelection === "two") {
+    leaderList.push(document.getElementById("leader1")?.value.trim() || "");
+    contactList.push(document.getElementById("email1")?.value.trim() || "");
+    leaderList.push(document.getElementById("leader2")?.value.trim() || "");
+    contactList.push(document.getElementById("email2")?.value.trim() || "");
+  } else if (leaderSelection === "three") {
+    leaderList.push(document.getElementById("leader1")?.value.trim() || "");
+    contactList.push(document.getElementById("email1")?.value.trim() || "");
+    leaderList.push(document.getElementById("leader2")?.value.trim() || "");
+    contactList.push(document.getElementById("email2")?.value.trim() || "");
+    leaderList.push(document.getElementById("leader3")?.value.trim() || "");
+    contactList.push(document.getElementById("email3")?.value.trim() || "");
   }
 
-//  recieving the username (saved with sessionStorage in register function)
-  await updateDoc(doc(db, "clubs", sessionStorage.getItem("username")), {
-    // adding fields:
-    clubName: document.getElementById("clubName").value,
+  let meetingTime = "";
+
+  if (meetingSelection === "other") {
+    meetingTime = meetingOtherInput || "";
+  } else {
+    meetingTime = meetingSelection || "";
+  }
+
+  const errors = [];
+
+  if (!clubNameInput) {
+    errors.push("Club name is required.");
+  }
+
+  if (!leaderSelection || leaderSelection === "choose") {
+    errors.push("Please select the number of club leaders.");
+  }
+
+  const missingLeaderNames = leaderList.some((name) => !name);
+
+  if (leaderList.length === 0 || missingLeaderNames) {
+    errors.push("Please provide a name for each club leader.");
+  }
+
+  if (!meetingTime || meetingTime === "choose") {
+    errors.push("Please specify the meeting frequency.");
+  }
+
+  if (meetingSelection === "other" && !meetingOtherInput) {
+    errors.push("Please provide a meeting time when selecting 'other'.");
+  }
+
+  if (!typeSelection || typeSelection === "choose") {
+    errors.push("Please select the club type.");
+  }
+
+  if (!memberCountInput) {
+    errors.push("Please provide the number of members.");
+  }
+
+  if (!bioInput) {
+    errors.push("Please provide a club bio.");
+  }
+
+  if (!driveShareLinkInput) {
+    errors.push("Please provide the club Google Drive link.");
+  }
+
+  if (errors.length > 0) {
+    alert(`We couldn't create your club because of the following issues:\n- ${errors.join("\n- ")}`);
+    await deleteIncompleteClub();
+    return;
+  }
+
+//receiving the username (saved with localStorage in register function)
+  await setDoc(doc(db, "clubs", username), {
+    username,
+    password,
+    clubName: clubNameInput,
     clubLeaders: leaderList,
-    meetingTime: meetingTime,
-    driveLink: document.getElementById("driveShareLink").value,
-    type: document.getElementById("typeSelection").value,
-    // parses it into list instead of string; from sessionStorage from MultiSelect.js page
-    tags: JSON.parse(sessionStorage.getItem("tags")),
-    memberCount: document.getElementById("memberCount").value,
-    facultyAdvisor: document.getElementById("facultyAdvisor")?.value || "",
+    meetingTime,
+    driveLink: driveShareLinkInput,
+    type: typeSelection,
+    tags,
+    memberCount: memberCountInput,
+    facultyAdvisor: facultyAdvisorInput,
     contactEmails: contactList,
-    bio: document.getElementById("bio").value,
+    bio: bioInput,
     points: 0,
-    lastMeeting: new Date() //KATE ADDED THIS FOR CALCULATING CLUBS IN DANGER!!!
-  }
-);
+    lastMeeting: new Date()
+  });
+
 // each section of this prints correctly into console. selected tags show up as list that updates as new tags added
 // however, only issue is that the clusb thesmelves are not showing up in firebase --> truing to problem solve this next
 
 //changes URL
-  sessionStorage.setItem("club", sessionStorage.getItem("username"));
+  sessionStorage.setItem("club", username);
   window.location.href = "clubDash.html";
 }
 //collection --> clubs
