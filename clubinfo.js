@@ -159,7 +159,7 @@ export const displayClubInfo = async function () {
   }
 
   let driveButton;
-  if (sessionStorage.getItem("canEdit") === "true") {
+  if (localStorage.getItem("canEdit") === "true") {
     // Drive button only for editors
     driveButton = document.createElement("a");
     driveButton.innerHTML = "Club Drive";
@@ -436,7 +436,7 @@ async function displayMeetingInfo(id){
     };
 
     // Append buttons and info to the meeting div
-    if(sessionStorage.getItem("canEdit") == "true"){
+    if(localStorage.getItem("canEdit") == "true"){
       editMeetingDiv.appendChild(editButton);
       editMeetingDiv.appendChild(deleteButton);
     }
@@ -471,7 +471,7 @@ async function displayMeetingInfo(id){
   addButton.innerHTML = "register new meeting";
   
   // Append the "add new meeting" button
-  if(sessionStorage.getItem("canEdit") == "true"){
+  if(localStorage.getItem("canEdit") == "true"){
     addEventDiv.appendChild(addButton);
   }
   outlook.appendChild(addEventDiv);
@@ -536,7 +536,7 @@ async function displayMeetingInfo(id){
     };
 
     // Append the buttons and meeting info div
-    if(sessionStorage.getItem("canEdit") == "true"){
+    if(localStorage.getItem("canEdit") == "true"){
       editMeetingDiv.appendChild(editbutton);
       editMeetingDiv.appendChild(deleteButton);
       editMeetingDiv.appendChild(saveButton);
@@ -545,7 +545,7 @@ async function displayMeetingInfo(id){
 
     
     meetingDiv.appendChild(meetingInfo);
-    if(sessionStorage.getItem("canEdit") == "true"){
+    if(localStorage.getItem("canEdit") == "true"){
       meetingDiv.appendChild(editMeetingDiv);
     }
 
@@ -581,7 +581,7 @@ async function displayMeetingInfo(id){
     `;
 
     // NEW: show private notes only for admins/leaders
-    if (sessionStorage.getItem("canEdit") == "true") {
+    if (localStorage.getItem("canEdit") == "true") {
       if (meeting.attendance < 1){
         unupdatedMeetings +=1;
       }
@@ -959,7 +959,7 @@ async function editMeetingInfo(meetingID, id) {
 
   // NEW: grab private notes element if visible
   const privateElement = document.getElementById(`private-${meetingID}`); // may be null
-  const canEditPrivate = !!privateElement && (sessionStorage.getItem("isGod") === "true" || sessionStorage.getItem("isLeader") === "true");
+  const canEditPrivate = !!privateElement && (localStorage.getItem("isGod") === "true" || localStorage.getItem("isLeader") === "true");
 
   // Get the text content of these elements
   const attendanceCount = attendanceElement.textContent.replace('Attendance : ', ''); // Removing the part after? "Attendance : " part
@@ -1067,28 +1067,34 @@ async function editMeetingInfo(meetingID, id) {
 
 export async function cLogin() {
   const clubId = sessionStorage.getItem("club");
-  const enteredPassword = sessionStorage.getItem("password");
+  const enteredPassword = localStorage.getItem("password");
 
   const docRef = doc(db, "clubs", clubId);
   const docSnap = await getDoc(docRef);
 
-  sessionStorage.setItem("canEdit", "false");
+  localStorage.setItem("canEdit", "false");
 
   if (docSnap.exists()) {
     const clubData = docSnap.data();
     if (enteredPassword === clubData.password) {
       console.log("club login working");
-      sessionStorage.setItem("clubAuth", "true"); // set before redirect
+      //keeps user loged in for 2 weeks on the device they are using
+      const expiryTime = Date.now() + 14 * 24 * 60 * 60 * 1000;
+      localStorage.setItem("loginExpiry", expiryTime.toString());
+      alert('You will remaine logged in for two weeks, so please make sure you log out if this is a shared device!')
+      localStorage.setItem("clubAuth", "true"); // set before redirect
       location.replace("clubDash.html");
-    } else {
+    } 
+    else {
       console.log("wrong username/password");
-      sessionStorage.setItem("clubAuth", "false");
+      localStorage.setItem("clubAuth", "false");
       alert("Wrong Username or Password");
     }
-  } else {
+  } 
+  else {
     console.log("Club not found");
     alert("Club not found");
-    sessionStorage.setItem("clubAuth", "false");
+    localStorage.setItem("clubAuth", "false");
   }
 }
 
@@ -1097,23 +1103,31 @@ export async function editVerification() {
   // get the club info from the database
   var docRef = doc(db, "clubs", sessionStorage.getItem("club"));
   var docSnap = await getDoc(docRef);
+    
+  // check expiry and login data
+  const expiry = parseInt(localStorage.getItem("loginExpiry"), 10);
+  const now = Date.now();
+  if (now > expiry) {
+    // expired: clear all login data
+    localStorage.clear();
+  }
 
   // just checking if you're logged in
   console.log("checking that you're logged in");
 
   // start by saying they can't edit just in case
-  sessionStorage.setItem("canEdit", "false");
+  localStorage.setItem("canEdit", "false");
 
   // grab info from sessionStorage
-  const clubAuth = sessionStorage.getItem("clubAuth");
+  const clubAuth = localStorage.getItem("clubAuth");
   const club = sessionStorage.getItem("club");
-  const password = sessionStorage.getItem("password");
-  const isGod = sessionStorage.getItem("isGod");
+  const password = localStorage.getItem("password");
+  const isGod = localStorage.getItem("isGod");
 
   // check if it's a club account and credentials match
   if (clubAuth === "true") {
     if (club === docSnap.data().username && password === docSnap.data().password) {
-      sessionStorage.setItem("canEdit", "true");
+      localStorage.setItem("canEdit", "true");
       console.log("you can edit this page!!!");
     } else {
       console.log("you CANT edit this page - wrong club username or password");
@@ -1121,7 +1135,7 @@ export async function editVerification() {
   } 
   // if it's an admin account
   else if (isGod === "true") {
-    sessionStorage.setItem("canEdit", "true");
+    localStorage.setItem("canEdit", "true");
     console.log("you can edit this page cause you're an admin!!!");
   } 
   // not logged in at all
@@ -1149,19 +1163,15 @@ export async function editVerification() {
         if (isGod === "true") {
           signOut(auth)
             .then(() => {
-              sessionStorage.clear();
+              localStorage.clear();
               location.reload();
             })
             .catch((error) => {
               console.error("Error signing out:", error);
             });
-        } else {
-          // Only clear login/auth session keys
-          sessionStorage.removeItem("clubAuth");
-          sessionStorage.removeItem("isGod");
-          sessionStorage.removeItem("canEdit");
-          sessionStorage.removeItem("password");
-
+        } 
+        else {
+          localStorage.clear();
           //reload the page to update UI
           location.reload();
         }
@@ -1172,7 +1182,7 @@ export async function editVerification() {
 
     // Add header image edit controls for editors/admins
     try {
-      const canEdit = sessionStorage.getItem("canEdit") === "true";
+      const canEdit = localStorage.getItem("canEdit") === "true";
       if (canEdit) {
         const headerEl = document.getElementById("header");
         if (headerEl && !document.getElementById("editHeaderControls")) {
@@ -1310,8 +1320,8 @@ export function correctNavDisplayCD() {
   const logoutBtn = document.getElementById("logout");
   const adminBtn = document.getElementById("adminPageBtn");
 
-  const clubAuth = sessionStorage.getItem("clubAuth");
-  const isGod = sessionStorage.getItem("isGod");
+  const clubAuth = localStorage.getItem("clubAuth");
+  const isGod = localStorage.getItem("isGod");
 
   // User is logged in if clubAuth or isGod is true
   const loggedIn = clubAuth === "true" || isGod === "true";
@@ -1326,14 +1336,14 @@ export function correctNavDisplayCD() {
         if (isGod === "true") {
           signOut(auth)
             .then(() => {
-              sessionStorage.clear();
+              localStorage.clear();
               location.reload();
             })
             .catch((error) => {
               console.error("Error signing out:", error);
             });
         } else {
-          sessionStorage.clear();
+          localStorage.clear();
           location.reload();
         }
       };
