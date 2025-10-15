@@ -41,7 +41,7 @@
     <label>Password:</label><input type="password" id="password" placeholder = "Type Here">
 
     <!-- Links to the moreInfo page and calls onclick function login(); uses username and password as parameters -->
-    <button onclick = "sessionStorage.setItem('club', document.getElementById('username').value); sessionStorage.setItem('password', document.getElementById('password').value); cLogin()" class="loginButton clubLB">Login</button>      
+    <button onclick = "sessionStorage.setItem('club', document.getElementById('username').value); localStorage.setItem('password', document.getElementById('password').value); cLogin()" class="loginButton clubLB">Login</button>      
 
     <!-- still needs to  -->
     <a href="clubSignUp.html"><p></p>Registering a new club? Register here</a>
