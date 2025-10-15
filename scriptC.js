@@ -104,7 +104,9 @@ export async function addMeetings() {
             const formattedDate = `${month}/${day}/${year}`;
             const timestamp = meeting.data().date
             const date = timestamp.toDate();
-            const time = date.toLocaleTimeString();
+            const time = date.toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' });
+            const type = meeting.data().type || (meeting.data().isAnEvent ? 'Event' : 'Meeting');
+
             events.push({
                 dateObj: meetingDate,
                 date: formattedDate, // Save the date.
@@ -113,6 +115,7 @@ export async function addMeetings() {
                 location: meeting.data().location,
                 description: meeting.data().description,
                 time: time,
+                type: type,
                 username: item.data().username
             });
         }
@@ -318,8 +321,42 @@ function attachEventsToDay({ container, date }) {
 
     filteredEvents.forEach((event) => {
         const eventDiv = document.createElement('div');
-        eventDiv.innerText = `${event.title} meeting`;
+
+        // decide whether to show a detailed label (time | title | location)
+        const isMobile = window.matchMedia('(max-width: 700px)').matches;
+        const showDetailed = (viewMode === 'week') || isMobile;
+
+        // ensure we have a clean time string (fallback to dateObj if needed)
+        const timeStr = event.time || (new Date(event.dateObj)).toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' });
+
+        if (showDetailed || isMobile) {
+            const compactLabel = `${timeStr} | ${event.title} ${event.type || 'Meeting'} | ${event.location || 'TBA'}`;
+            eventDiv.setAttribute('title', compactLabel); // hover/tap fallback
+
+            const timeLine = document.createElement('div');
+            timeLine.className = 'event-line event-line--time';
+            timeLine.textContent = timeStr;
+
+            const titleLine = document.createElement('div');
+            titleLine.className = 'event-line event-line--title';
+            titleLine.textContent = `${event.title} ${event.type || 'Meeting'}`;
+
+            const locationLine = document.createElement('div');
+            locationLine.className = 'event-line event-line--location';
+            locationLine.textContent = event.location || 'TBA';
+
+            // Append lines in order (each will render on its own line)
+            eventDiv.appendChild(timeLine);
+            eventDiv.appendChild(titleLine);
+            eventDiv.appendChild(locationLine);
+        } 
+        else {
+            const label = `${event.title} ${event.type}`;
+            eventDiv.textContent = label;
+            eventDiv.setAttribute('title', label);
+        }
         eventDiv.classList.add('event');
+    
         eventDiv.addEventListener('click', function () {
             sessionStorage.setItem("club", event.username);
 
