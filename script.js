@@ -19,6 +19,9 @@ export const login =  function(email, password){
     signInWithEmailAndPassword(auth, email, password)
     .then((userCredential) => {
       // Signed in 
+      const expiryTime = Date.now() + 14 * 24 * 60 * 60 * 1000;
+      localStorage.setItem("loginExpiry", expiryTime.toString());
+      alert('You will remaine logged in for two weeks, so please make sure you log out if this is a shared device!')
       const user = userCredential.user;
       location.replace('god.html');
     })
@@ -42,6 +45,13 @@ export const login =  function(email, password){
   }
 
 export const checkLogin = async function(){
+  // check expiry and login data
+  const expiry = parseInt(localStorage.getItem("loginExpiry"), 10);
+  const now = Date.now();
+  if (now > expiry) {
+    // expired: clear all login data
+    localStorage.clear();
+  }
   onAuthStateChanged(auth, (user) => {
     const onGodPage = window.location.pathname.includes("god.html");
     if (!user) { 
@@ -55,7 +65,7 @@ export const checkLogin = async function(){
     } 
     else{
     console.log("read !!!!!!!!!!!!!!!!!")
-    sessionStorage.setItem("isGod", "true");
+    localStorage.setItem("isGod", "true");
     const logoutBtn = document.getElementById("logout");
     if (logoutBtn){ logoutBtn.style.display = "inline-block";}
     }
@@ -67,7 +77,7 @@ export function logout() {
   signOut(auth)
     .then(() => {
       // Clear all session storage items
-      sessionStorage.clear();
+      localStorage.clear();
       // Redirect to homepage or login page after log Out
       location.replace("index.html");
     })
