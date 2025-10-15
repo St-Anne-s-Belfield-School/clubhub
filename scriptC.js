@@ -24,8 +24,8 @@ export function correctNavDisplay() {
   const logoutBtn = document.getElementById("logout");
   const adminBtn = document.getElementById("adminPageBtn");
 
-  const clubAuth = sessionStorage.getItem("clubAuth");
-  const isGod = sessionStorage.getItem("isGod");
+  const clubAuth = localStorage.getItem("clubAuth");
+  const isGod = localStorage.getItem("isGod");
   const loggedIn = clubAuth === "true" || isGod === "true";
 
   if (loggedIn) {
@@ -37,14 +37,14 @@ export function correctNavDisplay() {
         if (isGod === "true") {
           signOut(auth)
             .then(() => {
-              sessionStorage.clear();
+              localStorage.clear();
               location.reload();
             })
             .catch((error) => {
               console.error("Error signing out:", error);
             });
         } else {
-          sessionStorage.clear();
+          localStorage.clear();
           location.reload();
         }
       };
