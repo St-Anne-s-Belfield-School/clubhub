@@ -386,7 +386,8 @@ async function displayMeetingInfo(id){
       meetingID: meeting.id,
       attendance: meeting.data().attendance,
       isAnEvent: meeting.data().isAnEvent,
-      leaderNotes: meeting.data().leaderNotes || ""   // NEW: private notes
+      leaderNotes: meeting.data().leaderNotes || "",   // NEW: private notes
+      privateMeeting: meeting.data().privateMeeting === true
     };
 
     // Check if the meeting's date is in the future or past and push to appropriate array.
@@ -407,6 +408,9 @@ async function displayMeetingInfo(id){
 
   // Loop through future meetings and create div elements for each.
   futureMeetings.forEach((meeting) => {
+    if (meeting.privateMeeting && !(localStorage.getItem("isGod") === "true" || localStorage.getItem("isLeader") === "true")) {
+      return;
+    }
     var meetingDiv = document.createElement("div");
     var meetingInfo = document.createElement("div");
     var editMeetingDiv = document.createElement("div"); 
@@ -644,6 +648,9 @@ async function createMeeting(id) {
   const meetingDesc = document.getElementById("meeting-desc").value;
   const meetingLocation = document.getElementById("meeting-location").value;
   const isAnEvent = document.querySelector('input[name="event"]:checked')?.value === "yes";
+  const isLeadersOnly = document.getElementById("leaders-only")?.checked === true;
+  const isGod = localStorage.getItem("isGod") === "true";
+  const isLeader = localStorage.getItem("isLeader") === "true";
   const recurring = document.getElementById("recurring")?.checked === true;
 
   if (!meetingDate || !meetingTime || !meetingDesc || !meetingLocation) {
@@ -746,7 +753,8 @@ async function createMeeting(id) {
       description: meetingDesc,
       location: meetingLocation,
       date: meetingTimestamp,
-      isAnEvent: isAnEvent
+      isAnEvent: isAnEvent,
+      privateMeeting: !!isLeadersOnly
     });
   }
 
@@ -1032,7 +1040,7 @@ async function editMeetingInfo(meetingID, id) {
       await updateDoc(databaseItem,{
         attendance: newAttendance,
         description: newRecap,
-        ...(typeof newPrivate !== "undefined" ? { leaderNotes: newPrivate } : {}) // NEW: include only if allowed/present
+        leaderNotes: newPrivate // NEW: include only if allowed/present
       });
 
       const MD = databaseItemSnapshot.data().date;
