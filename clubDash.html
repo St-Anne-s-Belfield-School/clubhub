@@ -40,9 +40,17 @@
         </div>
         <div class="clubInfoBox bioQF" id = "quickFacts">Club information:</div>
         </div>
-        <div class="clubInfoBox" id ="outlook"><h2 class="hTwoCDash">Next meetings and activities:</h2></div>
+        <div class="clubInfoBox" id ="outlook">
+            <h2 class="hTwoCDash">Next meetings and activities:</h2>
+            <div class="loading-overlay" id="outlook-loading" aria-hidden="true">
+                <span class="loading-spinner" role="status" aria-label="Loading upcoming meetings"></span>
+            </div>
+        </div>
         <div class="clubInfoBox" id ="meetingLog">
             <h2 class="hTwoCDash">Past meetings and activities:</h2>
+            <div class="loading-overlay" id="meetingLog-loading" aria-hidden="true">
+                <span class="loading-spinner" role="status" aria-label="Loading past meetings"></span>
+            </div>
             <div id="meetingListScrollable"></div>
         </div>
     </div>
@@ -110,7 +118,9 @@
 
             <label for="meeting-location">Meeting location:</label>
             <textarea id="meeting-location"></textarea>
-    
+
+            <label><input type="checkbox" id="leaders-only"> Leaders only</label>
+
             <label class="eventQuestion">Is this a meeting or an event?</label><br>
 
             <label class="radio-container">
@@ -122,6 +132,10 @@
                 <input type="radio" name="event" id="no" value="no">
                 <span class="custom-radio"></span> Meeting
             </label>
+
+            <div class="loading-inline" id="recurring-loading" aria-hidden="true" style="display: none;">
+                <span class="loading-spinner smaller" role="status" aria-label="Generating recurring meetings"></span>
+            </div>
 
             <br><br>
 
