@@ -67,7 +67,7 @@ export async function renderActiveAnnouncements() {
 
   snaps.forEach(s => {
     const d = s.data();
-    if (d?.deleted) return;
+    if (d?.removed) return;
     if (d?.isActive === false) return;
     if (!d?.startAt || !d?.endAt) return;
     const start = new Date(d.startAt);
