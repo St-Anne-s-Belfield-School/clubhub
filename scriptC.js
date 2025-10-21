@@ -116,7 +116,7 @@ export async function addMeetings() {
                 description: meeting.data().description,
                 time: time,
                 type: type,
-                username: item.data().username
+                privateMeeting: meeting.data().privateMeeting || false
             });
         }
     }
@@ -314,9 +314,21 @@ function createDayCell({ label, date, fade = false, highlightToday = false, enfo
 
 function attachEventsToDay({ container, date }) {
     const filteredEvents = events.filter((event) => {
-        const eventDate = new Date(event.dateObj);
-        eventDate.setHours(0, 0, 0, 0);
-        return eventDate.getTime() === date.getTime();
+        // Access control for leaders-only (privateMeeting)
+        const isGod = localStorage.getItem("isGod") === "true";        // admin
+        const isLeader = localStorage.getItem("isLeader") === "true";  // logged-in user is a leader (for some club)
+        const currentUsername = localStorage.getItem("username") || localStorage.getItem("club") || null;
+        const isClubLeaderForThisClub = isLeader && currentUsername === event.username;
+
+        // If the meeting is private, only show it to admins or the club's leader
+        if (event.privateMeeting && (!isGod && !isClubLeaderForThisClub)) {
+            return;
+        }
+        else {
+            const eventDate = new Date(event.dateObj);
+            eventDate.setHours(0, 0, 0, 0);
+            return eventDate.getTime() === date.getTime();
+        }
     });
 
     filteredEvents.forEach((event) => {
@@ -355,6 +367,15 @@ function attachEventsToDay({ container, date }) {
             eventDiv.textContent = label;
             eventDiv.setAttribute('title', label);
         }
+
+        // style special event types
+        if (event.type === 'Event') {
+            eventDiv.classList.add('event-highlight-meeting'); // visual for public events
+        }
+        if (event.privateMeeting) {
+            eventDiv.classList.add('leader-highlight-meeting'); // visual for leader-only meetings
+        }
+
         eventDiv.classList.add('event');
     
         eventDiv.addEventListener('click', function () {
