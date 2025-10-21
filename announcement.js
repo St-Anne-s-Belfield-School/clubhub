@@ -81,9 +81,17 @@ export async function renderActiveAnnouncements() {
   active.sort((a, b) => (b.startAt || "").localeCompare(a.startAt || ""));
   const toShow = active.slice(0, 3);
 
+  // create a fixed container that will hold the banners stacked with spacing
+  const container = document.createElement("div");
+  container.id = "site-announcement-container";
+  container.className = "site-announcement-container";
+  document.body.appendChild(container);
+
   for (const a of toShow) {
     if (isDismissed(a)) continue;
     const banner = createBanner(a);
-    insertAfterHeader(banner);
+
+    // append into the fixed container so CSS gap controls spacing
+    container.appendChild(banner);
   }
 }
