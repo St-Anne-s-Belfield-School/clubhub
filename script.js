@@ -93,10 +93,13 @@ export const displayClubsInDanger = async function() {
   const databaseItems = await getDocs(collection(db, "clubs"));
 
 
-  const todaysDate = new Date();
-  // Calculate the date for two months ago
-  const twoMonthsAgo = new Date(todaysDate);
-  twoMonthsAgo.setMonth(todaysDate.getMonth() - 2);
+const todaysDate = new Date();
+
+// Calculate the date for one and a half months ago
+const monthAndHalfAgo = new Date(todaysDate);
+monthAndHalfAgo.setMonth(todaysDate.getMonth() - 1);
+monthAndHalfAgo.setDate(monthAndHalfAgo.getDate() - 15);
+
 
   const clubsInDanger = [];
 
@@ -108,7 +111,7 @@ export const displayClubsInDanger = async function() {
     // Convert Firestore Timestamp to JavaScript Date
     const lastMeetingDate = lastMeetingTimestamp.toDate();
 
-    if (lastMeetingDate <= twoMonthsAgo) {
+    if (lastMeetingDate <= monthAndHalfAgo) {
       clubsInDanger.push(club);
     }
   });
@@ -580,14 +583,14 @@ export async function renderAdminClubInfo() {
     InDagerNotice.style.color = 'white'
 
     var inDangerMessage = document.createElement("h4");
-    inDangerMessage.innerHTML =  "This club has not met in over two months...";
+    inDangerMessage.innerHTML =  "This club has not recorded a meeting in over a month (1.5+ months exactly)...";
   }
   else{
     InDagerNotice.innerHTML =  "Active";
     InDagerNotice.style.backgroundColor = 'rgb(71,160,37)';
 
     var inDangerMessage = document.createElement("h4");
-    inDangerMessage.innerHTML =  "This club has met within two months. This means it is active and there is no cause for concern!";
+    inDangerMessage.innerHTML =  "This club has met within the last two months. This means it is active and there is no cause for concern!";
   }
 
   adminInDangerDiv.appendChild(InDagerNoticeWrapper);
@@ -724,22 +727,26 @@ export function goToClub(){
 // ————— Helper Function for displeying the meeting info ————//
 async function isClubInDanger(username) {
   const parentDocRef = doc(db, "clubs", username);
-    const clubDoc = await getDoc(parentDocRef);
+  const clubDoc = await getDoc(parentDocRef);
 
   const todaysDate = new Date();
-  const twoMonthsAgo = new Date(todaysDate);
-  twoMonthsAgo.setMonth(todaysDate.getMonth() - 2);
+  const monthAndHalfAgo = new Date(todaysDate);
+  monthAndHalfAgo.setMonth(todaysDate.getMonth() - 1);
+  monthAndHalfAgo.setDate(monthAndHalfAgo.getDate() - 15);
+
+  console.log(monthAndHalfAgo);
 
   const lastMeetingTimestamp = clubDoc.data().lastMeeting;
   const lastMeetingDate = lastMeetingTimestamp.toDate();
 
-  if (lastMeetingDate <= twoMonthsAgo) {
+  if (lastMeetingDate <= monthAndHalfAgo) {
     console.log("true");
     return true;
+  } 
+  else {
+    console.log("false");
+    return false;
   }
-
-  console.log("False");
-  return false;
 }
 
 // Helper function(s): 
@@ -962,13 +969,14 @@ async function renderLog() {
       actions.appendChild(delBtn);
     }
 
-
-
     wrap.appendChild(msgLine);
     wrap.appendChild(datesLine);
     wrap.appendChild(actions);
     el.logList.appendChild(wrap);
+
   });
+
+  
 }
 
 async function clearAnnouncementHistory() {
