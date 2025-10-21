@@ -691,6 +691,15 @@ resized to fit nicely beside the calendar -- */
   padding-bottom: 6px;
 }
 
+/* public events — clear red accent without overpowering layout */
+.event-highlight-meeting {
+  background-color: #f37671c2; /* pale red background */
+}
+
+/* leader-only meetings — darker grey to signal restricted visibility */
+.leader-highlight-meeting {
+  background-color: #3a85ffb3; /* light but noticeably grey */
+}
 
 /* --- END CALENDAR --- */
 
@@ -1336,19 +1345,28 @@ option {
 
 /* ------------  ADMIN PAGE --------------*/
 /* ===== Site-wide announcement banners (homepage) ===== */
+#site-announcement-container {
+  max-width: 900px;
+  position: fixed;          /* <— fixed so it hovers */
+  top: 200px;               /* below header */
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 1000;            /* make sure it floats above other stuff */  
+  pointer-events: none; /* allow clicks to pass through container; banners themselves can opt-in */
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  pointer-events: none; /* allow clicks to pass through container; banners themselves can opt-in */
+}
+
 .site-announcement-banner {
   background: rgba(255, 255, 255, 0.974);
   border: 2px solid #000;
   border-radius: 10px;
   padding: 24px 30px;
-  max-width: 800px;
-  position: fixed;          /* <— fixed so it hovers */
-  top: 300px;               /* below header */
-  left: 50%;
-  transform: translateX(-50%);
-  z-index: 1000;            /* make sure it floats above other stuff */
   box-shadow: 0 6px 20px rgba(0,0,0,0.2);
   animation: fadeIn 0.3s ease-out;
+  pointer-events: auto;  /* allow clicks on the banner */
 }
 
 .site-announcement-banner .banner-content {
