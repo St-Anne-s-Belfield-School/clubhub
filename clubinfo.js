@@ -1037,11 +1037,15 @@ async function editMeetingInfo(meetingID, id) {
 
     //checks to see if the new attendance value works (not zero)
     if (!isNaN(newAttendance) && newRecap){
-      await updateDoc(databaseItem,{
+      const updateData = {
         attendance: newAttendance,
-        description: newRecap,
-        leaderNotes: newPrivate // NEW: include only if allowed/present
-      });
+        description: newRecap
+      };
+      // Only include leaderNotes if it's not undefined
+      if (newPrivate !== undefined) {
+        updateData.leaderNotes = newPrivate;
+      }
+      await updateDoc(databaseItem, updateData);
 
       const MD = databaseItemSnapshot.data().date;
       const D = MD.toDate();
@@ -1156,6 +1160,7 @@ export async function editVerification() {
   const loginBtn = document.getElementById("login");
   const logoutBtn = document.getElementById("logout");
   const adminBtn = document.getElementById("adminPageBtn");
+  const addAcountBtn = document.getElementById("Add-Another-Acount");
 
   // figure out if you're logged in as either club or admin
   const loggedIn = clubAuth === "true" || isGod === "true";
@@ -1163,6 +1168,14 @@ export async function editVerification() {
   if (loggedIn) {
     // hide login button
     if (loginBtn){ loginBtn.style.display = "none";}
+
+    if(addAcountBtn){
+      addAcountBtn.style.display = "inline-block";
+
+      addAcountBtn.onclick = function(){
+        location.href = "newAccount.html";
+      };
+    }
 
     if (logoutBtn) {
       logoutBtn.style.display = "inline-block";
@@ -1367,3 +1380,39 @@ export function correctNavDisplayCD() {
     if (adminBtn) adminBtn.style.display = "none";
   }
 }
+
+// export async function additionalLogin(){
+
+//   const clubId = sessionStorage.getItem("club");
+//   const enteredPassword = localStorage.getItem("password");
+
+//   const docRef = doc(db, "clubs", clubId);
+//   const docSnap = await getDoc(docRef);
+
+//   localStorage.setItem("canEdit", "false");
+
+//   if (docSnap.exists()) {
+//     const clubData = docSnap.data();
+//     if (enteredPassword === clubData.password) {
+//       console.log("club login working");
+//       //keeps user loged in for 2 weeks on the device they are using
+//       const expiryTime = Date.now() + 14 * 24 * 60 * 60 * 1000;
+//       localStorage.setItem("loginExpiry", expiryTime.toString());
+//       alert('You will remaine logged in for two weeks, so please make sure you log out if this is a shared device!')
+//       localStorage.setItem("clubAuth", "true"); // set before redirect
+//       location.replace("clubDash.html");
+//     } 
+//     else {
+//       console.log("wrong username/password");
+//       localStorage.setItem("clubAuth", "false");
+//       alert("Wrong Username or Password");
+//     }
+//   } 
+//   else {
+//     console.log("Club not found");
+//     alert("Club not found");
+//     localStorage.setItem("clubAuth", "false");
+//   }
+// }
+
+// // NEEED TO CHANGE TO NEW CODE
