@@ -28,6 +28,7 @@ export const showClubs = async function () {
   const L1Container = document.getElementById("clubsL1");
   const L2Container = document.getElementById("clubsL2");
   const L3Container = document.getElementById("clubsL3");
+  const AffinityContainer = document.getElementById("affinityGroups");
 
   // Clear existing entries
   L1Container.innerHTML = "";
@@ -38,12 +39,14 @@ export const showClubs = async function () {
     L1: L1Container,
     L2: L2Container,
     L3: L3Container,
+    Affinity: AffinityContainer,
   };
 
   const clubsByLevel = {
     L1: [],
     L2: [],
     L3: [],
+    Affinity: [],
   };
 
   databaseItems.forEach((item) => {
@@ -809,8 +812,6 @@ async function getNearbyMeetingsCount(targetDateTime, currentClubId) {
 
 
 async function showDeleteModal(meetingID, id) {
-  // I want to add sone of the meeting info club, date, time
-  // so that the user can see what meeting they are deleteing before they delete it!
 
   console.log('meeting delete double check!')
   // clubID should be the name of the club
@@ -965,7 +966,7 @@ async function editMeetingInfo(meetingID, id) {
   const locationElement = document.getElementById(`location-${meetingID}`);
   //const isEventElement = document.getElementById(`type-${meetingID}`);
 
-  // NEW: grab private notes element if visible
+  //grab private notes element if visible
   const privateElement = document.getElementById(`private-${meetingID}`); // may be null
   const canEditPrivate = !!privateElement && (localStorage.getItem("isGod") === "true" || localStorage.getItem("isLeader") === "true");
 
@@ -974,13 +975,13 @@ async function editMeetingInfo(meetingID, id) {
   const meetingRecap = recapElement.textContent.replace('Meeting recap: ', ''); // Removing "Meeting recap: " part
   //const isEvent = isEventElement.textContent.replace('Meeting type: ', '');// Removing "Meeting recap: " part
   const meetingSpot = locationElement.textContent.replace('Location: ', ''); // Removing "Meeting recap: " part
-  const privateText = privateElement ? privateElement.textContent : "";       // NEW: existing private notes
+  const privateText = privateElement ? privateElement.textContent : "";       // existing private notes
 
   // Create text input and textarea elements
   const attendanceInput = document.createElement('input');
   const recapInput = document.createElement('textarea');
   const locationInput = document.createElement('input');
-  let privateInput; // NEW: will be created only if allowed
+  let privateInput; // will be created only if allowed
   //const isEventInput = document.createElement('input');
   attendanceInput.classList.add("attendance");
   recapInput.classList.add("recapEditBox");
@@ -1006,7 +1007,7 @@ async function editMeetingInfo(meetingID, id) {
   recapElement.parentNode.replaceChild(recapInput, recapElement);
   locationElement.parentNode.replaceChild(locationInput, locationElement);
   if (canEditPrivate && privateElement) {
-    privateElement.parentNode.replaceChild(privateInput, privateElement); // NEW: swap in editable private notes
+    privateElement.parentNode.replaceChild(privateInput, privateElement); // swap in editable private notes
   }
 
   // saving info:
@@ -1256,7 +1257,7 @@ export async function editVerification() {
           const colorSelect = document.createElement("select");
           colorSelect.classList.add("meetingEdit");
           const optionMaroon = document.createElement("option");
-          optionMaroon.value = "#7A0019"; // Minnesota maroon
+          optionMaroon.value = "#7A0019";  
           optionMaroon.textContent = "Maroon";
           const optionWhite = document.createElement("option");
           optionWhite.value = "#FFFFFF";
@@ -1264,7 +1265,6 @@ export async function editVerification() {
           colorSelect.appendChild(optionMaroon);
           colorSelect.appendChild(optionWhite);
 
-          // Initialize font selection based on current style
           try {
             const currentColor = getComputedStyle(headerEl).color;
             const approxWhite = /rgb\(\s*255\s*,\s*255\s*,\s*255\s*\)/i.test(currentColor);
@@ -1302,7 +1302,7 @@ export async function editVerification() {
           removeBtn.onclick = async () => {
             try {
               await updateDoc(doc(db, "clubs", sessionStorage.getItem("club")), { headerImage: "" });
-              // Revert to default (CSS background)
+              // Revert to default CSS background
               headerEl.style.backgroundImage = "";
               panel.style.display = "none";
             } catch (err) {
