@@ -529,7 +529,7 @@ export async function renderAdminClubInfo() {
 
       function enterEditMode() {
         const select = document.createElement("select");
-        ["L1", "L2", "L3"].forEach(l => {
+        ["L1", "L2", "L3", "Affinity"].forEach(l => {
           const opt = document.createElement("option");
           opt.value = l;
           opt.textContent = l;
