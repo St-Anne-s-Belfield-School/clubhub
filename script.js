@@ -92,14 +92,11 @@ export const displayClubsInDanger = async function() {
   var clubsInDangerDiv = document.getElementById("clubsInDangerDiv");
   const databaseItems = await getDocs(collection(db, "clubs"));
 
+  const todaysDate = new Date();
 
-const todaysDate = new Date();
-
-// Calculate the date for one and a half months ago
-const monthAndHalfAgo = new Date(todaysDate);
-monthAndHalfAgo.setMonth(todaysDate.getMonth() - 1);
-monthAndHalfAgo.setDate(monthAndHalfAgo.getDate() - 15);
-
+  // Calculate the date for one and a half months ago
+  const twoMonthsAgo = new Date(todaysDate);
+  twoMonthsAgo.setMonth(todaysDate.getMonth() - 2);
 
   const clubsInDanger = [];
 
@@ -110,8 +107,10 @@ monthAndHalfAgo.setDate(monthAndHalfAgo.getDate() - 15);
 
     // Convert Firestore Timestamp to JavaScript Date
     const lastMeetingDate = lastMeetingTimestamp.toDate();
+   
+    const type = (data.type || "")
 
-    if (lastMeetingDate <= monthAndHalfAgo) {
+    if (lastMeetingDate <= twoMonthsAgo && type !== "L3") {
       clubsInDanger.push(club);
     }
   });
@@ -124,14 +123,17 @@ monthAndHalfAgo.setDate(monthAndHalfAgo.getDate() - 15);
   });
 
   const clubsInDangerButtonsContainer = document.getElementById("clubsInDangerButtonsContainer");
-  clubsInDangerButtonsContainer.innerHTML = ""; // Clear old buttons
+  clubsInDangerButtonsContainer.innerHTML = ""; 
 
   clubsInDanger.forEach(club => {
+    const clubData = club.data();
+    console.log(`Club: ${clubData.clubName}, Type: ${clubData.type}`);
+
     const clubInDanger = document.createElement("button");
     clubInDanger.classList.add("clubsInDangerButton");
 
     const span = document.createElement("span");
-    span.innerHTML = club.data().clubName;
+    span.innerHTML = clubData.clubName;
 
     clubInDanger.onclick = function () {
       sessionStorage.setItem("adminClub", club.data().username);
@@ -141,8 +143,8 @@ monthAndHalfAgo.setDate(monthAndHalfAgo.getDate() - 15);
     clubInDanger.appendChild(span);
     clubsInDangerButtonsContainer.appendChild(clubInDanger);
   });
-
 }
+
 
 //—————————THIS IS MY SEARCH BAR CODE!!! —————————————//
 // Make an empty list to store all the clubs from the database
@@ -410,6 +412,7 @@ export async function renderAdminClubInfo() {
     addEditableField(clubInfo, "Password", "password", clubData.password, "text");
     addEditableField(clubInfo, "Leaders", "clubLeaders", clubData.clubLeaders || [], "array");
     addEditableField(clubInfo, "Bio", "bio", clubData.bio, "textarea");
+    addEditableField(clubInfo, "Leader Contact List", "contactEmails", clubData.contactEmails || [], "array");
     addEditableField(clubInfo, "Meeting frequency", "meetingTime", clubData.meetingTime, "text");
     addEditableField(clubInfo, "Number of members", "memberCount", clubData.memberCount, "number");
     addEditableField(clubInfo, "Club Name", "clubName", clubData.clubName, "text");
@@ -730,16 +733,15 @@ async function isClubInDanger(username) {
   const clubDoc = await getDoc(parentDocRef);
 
   const todaysDate = new Date();
-  const monthAndHalfAgo = new Date(todaysDate);
-  monthAndHalfAgo.setMonth(todaysDate.getMonth() - 1);
-  monthAndHalfAgo.setDate(monthAndHalfAgo.getDate() - 15);
+  const twoMonthsAgo = new Date(todaysDate);
+  twoMonthsAgo.setMonth(todaysDate.getMonth() - 2);
 
-  console.log(monthAndHalfAgo);
+  console.log(twoMonthsAgo);
 
   const lastMeetingTimestamp = clubDoc.data().lastMeeting;
   const lastMeetingDate = lastMeetingTimestamp.toDate();
 
-  if (lastMeetingDate <= monthAndHalfAgo) {
+  if (lastMeetingDate <= twoMonthsAgo) {
     console.log("true");
     return true;
   } 
