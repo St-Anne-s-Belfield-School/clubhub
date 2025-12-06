@@ -10,24 +10,31 @@
 </head>
 <body>
 
- <script type="module" src="script.js"></script>
- <script type="module" src="./scriptC.js"></script>
- <script type="module">
-    import {login} from './script.js';
-    import {addMeetings, correctNavDisplay} from './scriptC.js';
-    import {loadLeaderboard} from './leaderboardScore.js';
-    import {renderActiveAnnouncements} from './announcement.js';
+<script type="module" src="./leaderboardScore.js"></script>
+<script type="module" src="./script.js"></script>
+<script type="module" src="./scriptC.js"></script>
 
-    window.correctNavDisplay = correctNavDisplay;
-    window.addMeetings = addMeetings;
-    window.loadLeaderboard = loadLeaderboard;
 
-    correctNavDisplay();
-    addMeetings();
-    loadLeaderboard();
-    renderActiveAnnouncements();
-     
- </script>
+<script type="module">
+  import {login} from './script.js';
+  import {addMeetings, correctNavDisplay} from './scriptC.js';
+  import {loadLeaderboard, getClubPoints} from './leaderboardScore.js';
+  import {renderActiveAnnouncements} from './announcement.js';
+  import { setClubPoints } from "./leaderboardScore.js";
+
+
+  window.setClubPoints = setClubPoints;
+  window.correctNavDisplay = correctNavDisplay;
+  window.addMeetings = addMeetings;
+  window.loadLeaderboard = loadLeaderboard;
+  window.getClubPoints = getClubPoints;
+
+  correctNavDisplay();
+  addMeetings();
+  loadLeaderboard();
+  renderActiveAnnouncements();
+</script>
+
 
 
      <!-- creates the header box and the title, inside the box -->
