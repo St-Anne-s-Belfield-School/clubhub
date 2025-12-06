@@ -28,6 +28,8 @@ export const updatePoints = async function(clubUsername, oAttendance, nAttendanc
   console.log(eventBoolean);
 
   var username = clubUsername;
+  
+  console.log(`[FUNCTION CALLED] updatePoints invoked for club: ${clubUsername}`);
   //attendance from previous edit of meeting
   var oldAttendance = oAttendance;
   //attendance changed to now
@@ -50,6 +52,7 @@ export const updatePoints = async function(clubUsername, oAttendance, nAttendanc
   //getting pointTotal for club from firebase
   const pointTotal = docSnap.data().points;
   console.log("old total" + pointTotal);
+  console.log(`[CURRENT POINTS] Club "${docSnap.data().clubName}" currently has: ${pointTotal} points`);
   // const meetingsCollectionRef = collection(docRef, "all-meetings");
   // const databaseItem = doc(meetingsCollectionRef, meetingId);
   // const attendance = doc(databaseItem, "attendance");
@@ -110,29 +113,32 @@ export const updatePoints = async function(clubUsername, oAttendance, nAttendanc
 
   console.log("end newTotal = " + localPointTotal);
 
-  updateDoc(doc(db, "clubs", username), {
+  console.log(`[BEFORE UPLOAD] Club "${docSnap.data().clubName}" points: ${pointTotal}`);
+  
+  await updateDoc(doc(db, "clubs", username), {
     //adding newly calculated pt total additions from this meeting
       points: localPointTotal,
   });
 
+  console.log(`[AFTER UPLOAD] Club "${docSnap.data().clubName}" points: ${localPointTotal}`);
   console.log("did you make it?");
 
   ////comparing with leaderboards:::
   //getting leaderboard point totals (1st-3rd places for L1, L2 and L3 clubs)
   const docRefOneFirst = doc(db, "metadata", "L1first");
   const docSnapOneFirst = await getDoc(docRefOneFirst);
-  const pointL1First = docSnapOneFirst.data().points;
-  const nameL1First = docSnapOneFirst.data().clubName;
+  const pointL1First = (docSnapOneFirst.data() || {}).points || 0;
+  const nameL1First = (docSnapOneFirst.data() || {}).clubName || "";
 
   const docRefOneSecond = doc(db, "metadata", "L1second");
   const docSnapOneSecond = await getDoc(docRefOneSecond);
-  const pointL1Second = docSnapOneSecond.data().points;
-  const nameL1second = docSnapOneSecond.data().clubName;
+  const pointL1Second = (docSnapOneSecond.data() || {}).points || 0;
+  const nameL1second = (docSnapOneSecond.data() || {}).clubName || "";
 
   const docRefOneThird = doc(db, "metadata", "L1third");
   const docSnapOneThird = await getDoc(docRefOneThird);
-  const pointL1Third = docSnapOneThird.data().points;
-  const nameL1third = docSnapOneThird.data().clubName;
+  const pointL1Third = (docSnapOneThird.data() || {}).points || 0;
+  const nameL1third = (docSnapOneThird.data() || {}).clubName || "";
 
   const docRefTwoFirst = doc(db, "metadata", "L2first");
   const docSnapTwoFirst = await getDoc(docRefTwoFirst);
@@ -150,20 +156,7 @@ export const updatePoints = async function(clubUsername, oAttendance, nAttendanc
   const pointL2Third = docSnapTwoThird.data().points;
   const nameL2third = docSnapTwoThird.data().clubName;
 
-  const docRefThreeFirst = doc(db, "metadata", "L3first");
-  const docSnapThreeFirst = await getDoc(docRefThreeFirst);
-  const pointL3First = docSnapThreeFirst.data().points;
-  const nameL3first = docSnapThreeFirst.data().clubName;
 
-  const docRefThreeSecond = doc(db, "metadata", "L3second");
-  const docSnapThreeSecond = await getDoc(docRefThreeSecond);
-  const pointL3Second = docSnapThreeSecond.data().points;
-  const nameL3Second = docSnapThreeSecond.data().clubName;
-  
-  const docRefThreeThird = doc(db, "metadata", "L3third");
-  const docSnapThreeThird = await getDoc(docRefThreeThird);
-  const pointL3Third = docSnapThreeThird.data().points;
-  const nameL3Third = docSnapThreeThird.data().clubName;
 
   const type = docSnap.data().type;
   console.log(type);
@@ -172,29 +165,55 @@ export const updatePoints = async function(clubUsername, oAttendance, nAttendanc
 
   if (type === "L1") {
     console.log("running L1");
+    
+    const l1firstRef = doc(db, "metadata", "L1first");
+    const l1secondRef = doc(db, "metadata", "L1second");
+    const l1thirdRef = doc(db, "metadata", "L1third");
+
+    const [l1FirstSnap, l1SecondSnap, l1ThirdSnap] = await Promise.all([
+      getDoc(l1firstRef),
+      getDoc(l1secondRef),
+      getDoc(l1thirdRef)
+    ]);
+
+    const l1Ops = [];
+    if (!l1FirstSnap.exists()) l1Ops.push(setDoc(l1firstRef, { clubName: "", points: 0 }));
+    if (!l1SecondSnap.exists()) l1Ops.push(setDoc(l1secondRef, { clubName: "", points: 0 }));
+    if (!l1ThirdSnap.exists()) l1Ops.push(setDoc(l1thirdRef, { clubName: "", points: 0 }));
+    if (l1Ops.length) await Promise.all(l1Ops);
+
+    const l1FirstData = (await getDoc(l1firstRef)).data() || { clubName: "", points: 0 };
+    const l1SecondData = (await getDoc(l1secondRef)).data() || { clubName: "", points: 0 };
+    const l1ThirdData = (await getDoc(l1thirdRef)).data() || { clubName: "", points: 0 };
+
     let LOneArray = [
-      { club: nameL1First, points: pointL1First },
-      { club: nameL1second, points: pointL1Second },
-      { club: nameL1third, points: pointL1Third }
+      { club: l1FirstData.clubName, points: l1FirstData.points },
+      { club: l1SecondData.clubName, points: l1SecondData.points },
+      { club: l1ThirdData.clubName, points: l1ThirdData.points }
     ];
-    // Remove any existing entry with the same club name
+    console.log(LOneArray + "before editing");
+    
     const index1 = LOneArray.findIndex(entry => entry.club === docSnap.data().clubName);
     if (index1 !== -1) {
       LOneArray.splice(index1, 1);
     }
-    // Add the new/updated score and sort
+    console.log(LOneArray + "after filter");
+    
     LOneArray.push({ club: docSnap.data().clubName, points: localPointTotal });
+    console.log(LOneArray + "after push");
+    
     LOneArray.sort((a, b) => b.points - a.points);
+    console.log(LOneArray + "after sort");
 
-    await updateDoc(doc(db, "metadata", "L1first"), {
+    await updateDoc(l1firstRef, {
       clubName: LOneArray[0].club,
       points: LOneArray[0].points,
     });
-    await updateDoc(doc(db, "metadata", "L1second"), {
+    await updateDoc(l1secondRef, {
       clubName: LOneArray[1].club,
       points: LOneArray[1].points,
     });
-    await updateDoc(doc(db, "metadata", "L1third"), {
+    await updateDoc(l1thirdRef, {
       clubName: LOneArray[2].club,
       points: LOneArray[2].points,
     });
@@ -237,44 +256,6 @@ export const updatePoints = async function(clubUsername, oAttendance, nAttendanc
       points: LTwoArray[2].points,
     });
     console.log("DONE")
-  }
-
-  if (type == "L3"){
-    console.log("running L3");
-    const LThreeArray = [
-      { club: nameL3first, points: pointL3First },
-      { club: nameL3Second, points: pointL3Second },
-      { club: nameL3Third, points: pointL3Third }
-    ];
-    console.log(LThreeArray + "before editing");
-    // Remove any existing entry with the same club name
-    const index = LThreeArray.findIndex(entry => entry.club  === docSnap.data().clubName);
-
-    if (index !== -1) {
-      LThreeArray.splice(index, 1);
-    }
-    console.log(LThreeArray + "after splice");
-    // Add the new/updated score
-    LThreeArray.push({ club: docSnap.data().clubName, points: localPointTotal });
-    console.log(LThreeArray + "after push");
-    // Sort by points in descending order
-    LThreeArray.sort((a, b) => b.points - a.points);
-    console.log(LThreeArray + "after sort");
-
-
-    await updateDoc(doc(db, "metadata", "L3first"), {
-      clubName: LThreeArray[0].club,
-      points: LThreeArray[0].points,
-    });
-    await updateDoc(doc(db, "metadata", "L3second"), {
-      clubName: LThreeArray[1].club,
-      points: LThreeArray[1].points,
-    });
-    await updateDoc(doc(db, "metadata", "L3third"), {
-      clubName: LThreeArray[2].club,
-      points: LThreeArray[2].points,
-    });
-    console.log("------DONE-----");
   }
 }
 
@@ -321,14 +302,14 @@ export const loadLeaderboard = async function(){
   const docRefTwoThree = doc(db, "metadata", "L2third");
   const docSnapTwoThird = await getDoc(docRefTwoThree);
       
-  const docRefThreeFirst = doc(db, "metadata", "L3first");
-  const docSnapThreeFirst = await getDoc(docRefThreeFirst);
+  // const docRefThreeFirst = doc(db, "metadata", "L3first");
+  // const docSnapThreeFirst = await getDoc(docRefThreeFirst);
       
-  const docRefThreeSecond = doc(db, "metadata", "L3second");
-  const docSnapThreeSecond = await getDoc(docRefThreeSecond);
+  // const docRefThreeSecond = doc(db, "metadata", "L3second");
+  // const docSnapThreeSecond = await getDoc(docRefThreeSecond);
           
-  const docRefThreeThird = doc(db, "metadata", "L3third");
-  const docSnapThreeThird = await getDoc(docRefThreeThird);
+  // const docRefThreeThird = doc(db, "metadata", "L3third");
+  // const docSnapThreeThird = await getDoc(docRefThreeThird);
 
   //adds data to page
   var L1First = document.getElementById("firstLOne");
@@ -349,13 +330,64 @@ export const loadLeaderboard = async function(){
   var L2Third = document.getElementById("thirdLTwo");
   if (L2Third && docSnapTwoThird.exists()) L2Third.innerHTML = docSnapTwoThird.data().clubName;
 
-  var L3First = document.getElementById("firstLThree");
-  if (L3First && docSnapThreeFirst.exists()) L3First.innerHTML = docSnapThreeFirst.data().clubName;
+  // var L3First = document.getElementById("firstLThree");
+  // if (L3First && docSnapThreeFirst.exists()) L3First.innerHTML = docSnapThreeFirst.data().clubName;
 
-  var L3Second = document.getElementById("secondLThree");
-  if (L3Second && docSnapThreeSecond.exists()) L3Second.innerHTML = docSnapThreeSecond.data().clubName;
+  // var L3Second = document.getElementById("secondLThree");
+  // if (L3Second && docSnapThreeSecond.exists()) L3Second.innerHTML = docSnapThreeSecond.data().clubName;
 
-  var L3Third = document.getElementById("thirdLThree");
-  if (L3Third && docSnapThreeThird.exists()) L3Third.innerHTML = docSnapThreeThird.data().clubName;
+  // var L3Third = document.getElementById("thirdLThree");
+  // if (L3Third && docSnapThreeThird.exists()) L3Third.innerHTML = docSnapThreeThird.data().clubName;
 
-} 
+}
+
+//allows user to see their any club's point total... 
+// must be on a page where leaderbaord.js has been loaded/run
+export const getClubPoints = async function(clubName) {
+  console.log(`Getting points for club: ${clubName}`);
+  try {
+    const clubsCollection = collection(db, "clubs");
+    const querySnapshot = await getDocs(clubsCollection);
+    
+    for (const docSnap of querySnapshot.docs) {
+      if (docSnap.data().clubName === clubName) {
+        const points = docSnap.data().points;
+        console.log(`Club "${clubName}" current points: ${points}`);
+        return points;
+      }
+    }
+    console.log(`Club "${clubName}" not found`);
+    return null;
+  } catch (error) {
+    console.error(`Error fetching points for ${clubName}:`, error);
+    return null;
+  }
+}
+//allows user to manually change points if there is a major error 
+// (not the safest as right no anyone who new how to code 
+// well enough maybe able to find this, but it's unlikely)
+export async function setClubPoints(clubName, newPoints) {
+  try {
+    console.log(`[MANUAL UPDATE] Setting points for "${clubName}" to ${newPoints}`);
+
+    const clubsCollection = collection(db, "clubs");
+    const snapshot = await getDocs(clubsCollection);
+
+    for (const docSnap of snapshot.docs) {
+      if (docSnap.data().clubName === clubName) {
+        const clubRef = doc(db, "clubs", docSnap.id);
+
+        await updateDoc(clubRef, { points: newPoints });
+
+        console.log(`[SUCCESS] Updated "${clubName}" to ${newPoints} points`);
+        return true;
+      }
+    }
+
+    console.log(`[FAILED] Club "${clubName}" not found`);
+    return false;
+
+  } catch (err) {
+    console.error("Error updating points:", err);
+  }
+}
