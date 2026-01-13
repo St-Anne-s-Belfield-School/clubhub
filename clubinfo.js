@@ -964,7 +964,7 @@ async function editMeetingInfo(meetingID, id) {
   const attendanceElement = document.getElementById(`attendance-${meetingID}`);
   const recapElement = document.getElementById(`recap-${meetingID}`);
   const locationElement = document.getElementById(`location-${meetingID}`);
-  //const isEventElement = document.getElementById(`type-${meetingID}`);
+  const isEventElement = document.getElementById(`type-${meetingID}`);
 
   //grab private notes element if visible
   const privateElement = document.getElementById(`private-${meetingID}`); // may be null
@@ -973,7 +973,8 @@ async function editMeetingInfo(meetingID, id) {
   // Get the text content of these elements
   const attendanceCount = attendanceElement.textContent.replace('Attendance : ', ''); // Removing the part after? "Attendance : " part
   const meetingRecap = recapElement.textContent.replace('Meeting recap: ', ''); // Removing "Meeting recap: " part
-  //const isEvent = isEventElement.textContent.replace('Meeting type: ', '');// Removing "Meeting recap: " part
+  const isEventText = isEventElement.textContent.replace('Meeting type: ', ''); // Removing "Meeting recap: " part
+  const wasEvent = (isEventText === "Event");
   const meetingSpot = locationElement.textContent.replace('Location: ', ''); // Removing "Meeting recap: " part
   const privateText = privateElement ? privateElement.textContent : "";       // existing private notes
 
@@ -982,7 +983,20 @@ async function editMeetingInfo(meetingID, id) {
   const recapInput = document.createElement('textarea');
   const locationInput = document.createElement('input');
   let privateInput; // will be created only if allowed
-  //const isEventInput = document.createElement('input');
+
+  const isEventInput = document.createElement('select');
+
+  const meetingOption = document.createElement('option');
+  meetingOption.value = "meeting";
+  meetingOption.textContent = "Meeting";
+
+  const eventOption = document.createElement('option');
+  eventOption.value = "event";
+  eventOption.textContent = "Event";
+
+  isEventInput.append(meetingOption, eventOption);
+  isEventInput.value = wasEvent ? "event" : "meeting";
+
   attendanceInput.classList.add("attendance");
   recapInput.classList.add("recapEditBox");
   locationInput.classList.add("locationEditBox");
@@ -1006,6 +1020,7 @@ async function editMeetingInfo(meetingID, id) {
   attendanceElement.parentNode.replaceChild(attendanceInput, attendanceElement);
   recapElement.parentNode.replaceChild(recapInput, recapElement);
   locationElement.parentNode.replaceChild(locationInput, locationElement);
+  isEventElement.parentNode.replaceChild(isEventInput, isEventElement);
   if (canEditPrivate && privateElement) {
     privateElement.parentNode.replaceChild(privateInput, privateElement); // swap in editable private notes
   }
@@ -1035,12 +1050,14 @@ async function editMeetingInfo(meetingID, id) {
     const newAttendance = parseInt(newAttendanceString, 10); // base 10/normal
     const newRecap = recapInput.value;
     const newPrivate = canEditPrivate && typeof privateInput !== "undefined" ? privateInput.value : undefined; // NEW
+    const newEvent = (isEventInput.value === "event");
 
     //checks to see if the new attendance value works (not zero)
     if (!isNaN(newAttendance) && newRecap){
       const updateData = {
         attendance: newAttendance,
-        description: newRecap
+        description: newRecap,
+        isAnEvent: newEvent
       };
       // Only include leaderNotes if it's not undefined
       if (newPrivate !== undefined) {
@@ -1062,8 +1079,10 @@ async function editMeetingInfo(meetingID, id) {
 
       console.log("LAST MEETING UPDATED COMP")
 
-      // Log success
-      await updatePoints(id, oldAttendance, newAttendance, wasEvent, wasEvent);
+      const clubType = clubDocSnapshot.data().type;
+      if (clubType === "L1" || clubType === "L2") {
+        await updatePoints(id, oldAttendance, newAttendance, wasEvent, newEvent);
+      }
       console.log('Document successfully updated!');
     }
     else{
