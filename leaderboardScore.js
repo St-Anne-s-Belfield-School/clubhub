@@ -111,6 +111,8 @@ export const updatePoints = async function(clubUsername, oAttendance, nAttendanc
   //adding new, updated points for meeting to meeting total
   localPointTotal = localPointTotal + newMeetingPoints + newAttendancePoint;
 
+  localPointTotal = Number(localPointTotal.toFixed(3));
+
   console.log("end newTotal = " + localPointTotal);
 
   console.log(`[BEFORE UPLOAD] Club "${docSnap.data().clubName}" points: ${pointTotal}`);
@@ -158,7 +160,8 @@ export const updatePoints = async function(clubUsername, oAttendance, nAttendanc
     }
     
     LOneArray.push({ club: docSnap.data().clubName, points: localPointTotal });
-    LOneArray.sort((a, b) => b.points - a.points);
+    LOneArray.sort((a, b) => Number(b.points) - Number(a.points));
+    console.table(LOneArray);
     console.log("L1 Array after sort:", JSON.stringify(LOneArray));
 
     await Promise.all(l1Refs.map((ref, i) => updateDoc(ref, {
@@ -200,7 +203,7 @@ export const updatePoints = async function(clubUsername, oAttendance, nAttendanc
     }
     
     LTwoArray.push({ club: docSnap.data().clubName, points: localPointTotal });
-    LTwoArray.sort((a, b) => b.points - a.points);
+    LTwoArray.sort((a, b) => Number(b.points) - Number(a.points));
     console.log("L2 Array after sort:", JSON.stringify(LTwoArray));
 
     await Promise.all(l2Refs.map((ref, i) => updateDoc(ref, {
@@ -224,8 +227,9 @@ export const loadLeaderboard = async function(){
     // Process L1
     const l1Clubs = allClubs
       .filter(c => c.type === "L1")
-      .sort((a, b) => b.points - a.points)
+      .sort((a, b) => Number(b.points) - Number(a.points))
       .slice(0, 5);
+
 
     const l1Ids = ["firstLOne", "secondLOne", "thirdLOne", "fourthsLOne", "fifthLOne"];
     l1Ids.forEach((id, i) => {
@@ -238,8 +242,9 @@ export const loadLeaderboard = async function(){
     // Process L2
     const l2Clubs = allClubs
       .filter(c => c.type === "L2")
-      .sort((a, b) => b.points - a.points)
+      .sort((a, b) => Number(b.points) - Number(a.points))
       .slice(0, 5);
+
 
     const l2Ids = ["firstLTwo", "secondLTwo", "thirdLTwo", "fourthLTwo", "fifthLTwo"];
     l2Ids.forEach((id, i) => {
@@ -249,25 +254,6 @@ export const loadLeaderboard = async function(){
       }
     });
 
-    // Sync Metadata to keep cache updated
-    const syncOps = [];
-    const suffixes = ["first", "second", "third", "fourth", "fifth"];
-    
-    suffixes.forEach((suffix, i) => {
-      const l1Ref = doc(db, "metadata", `L1${suffix}`);
-      syncOps.push(setDoc(l1Ref, { 
-        clubName: l1Clubs[i] ? l1Clubs[i].clubName : "", 
-        points: l1Clubs[i] ? l1Clubs[i].points : 0 
-      }));
-
-      const l2Ref = doc(db, "metadata", `L2${suffix}`);
-      syncOps.push(setDoc(l2Ref, { 
-        clubName: l2Clubs[i] ? l2Clubs[i].clubName : "", 
-        points: l2Clubs[i] ? l2Clubs[i].points : 0 
-      }));
-    });
-    
-    await Promise.all(syncOps);
     console.log("[LEADERBOARD] Rankings successfully updated and synced.");
 
   } catch (err) {
