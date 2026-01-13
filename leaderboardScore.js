@@ -124,221 +124,155 @@ export const updatePoints = async function(clubUsername, oAttendance, nAttendanc
   console.log("did you make it?");
 
   ////comparing with leaderboards:::
-  //getting leaderboard point totals (1st-3rd places for L1, L2 and L3 clubs)
-  const docRefOneFirst = doc(db, "metadata", "L1first");
-  const docSnapOneFirst = await getDoc(docRefOneFirst);
-  const pointL1First = (docSnapOneFirst.data() || {}).points || 0;
-  const nameL1First = (docSnapOneFirst.data() || {}).clubName || "";
-
-  const docRefOneSecond = doc(db, "metadata", "L1second");
-  const docSnapOneSecond = await getDoc(docRefOneSecond);
-  const pointL1Second = (docSnapOneSecond.data() || {}).points || 0;
-  const nameL1second = (docSnapOneSecond.data() || {}).clubName || "";
-
-  const docRefOneThird = doc(db, "metadata", "L1third");
-  const docSnapOneThird = await getDoc(docRefOneThird);
-  const pointL1Third = (docSnapOneThird.data() || {}).points || 0;
-  const nameL1third = (docSnapOneThird.data() || {}).clubName || "";
-
-  const docRefTwoFirst = doc(db, "metadata", "L2first");
-  const docSnapTwoFirst = await getDoc(docRefTwoFirst);
-  const pointL2First = docSnapTwoFirst.data().points;
-  const nameL2First = docSnapTwoFirst.data().clubName;
-      console.log(nameL2First);
-  
-  const docRefTwoSecond = doc(db, "metadata", "L2second");
-  const docSnapTwoSecond = await getDoc(docRefTwoSecond);
-  const pointL2Second = docSnapTwoSecond.data().points;
-  const nameL2second = docSnapTwoSecond.data().clubName;
-  
-  const docRefTwoThree = doc(db, "metadata", "L2third");
-  const docSnapTwoThird = await getDoc(docRefTwoThree);
-  const pointL2Third = docSnapTwoThird.data().points;
-  const nameL2third = docSnapTwoThird.data().clubName;
-
-
-
   const type = docSnap.data().type;
-  console.log(type);
-  console.log(username);
-  console.log(localPointTotal);
+  console.log(`[TYPE] ${type} | Club: ${username} | New Points: ${localPointTotal}`);
 
   if (type === "L1") {
-    console.log("running L1");
+    console.log("running L1 Leaderboard Update");
     
-    const l1firstRef = doc(db, "metadata", "L1first");
-    const l1secondRef = doc(db, "metadata", "L1second");
-    const l1thirdRef = doc(db, "metadata", "L1third");
+    const l1Refs = [
+      doc(db, "metadata", "L1first"),
+      doc(db, "metadata", "L1second"),
+      doc(db, "metadata", "L1third"),
+      doc(db, "metadata", "L1fourth"),
+      doc(db, "metadata", "L1fifth")
+    ];
 
-    const [l1FirstSnap, l1SecondSnap, l1ThirdSnap] = await Promise.all([
-      getDoc(l1firstRef),
-      getDoc(l1secondRef),
-      getDoc(l1thirdRef)
-    ]);
-
+    // Ensure all docs exist
+    const l1Snaps = await Promise.all(l1Refs.map(ref => getDoc(ref)));
     const l1Ops = [];
-    if (!l1FirstSnap.exists()) l1Ops.push(setDoc(l1firstRef, { clubName: "", points: 0 }));
-    if (!l1SecondSnap.exists()) l1Ops.push(setDoc(l1secondRef, { clubName: "", points: 0 }));
-    if (!l1ThirdSnap.exists()) l1Ops.push(setDoc(l1thirdRef, { clubName: "", points: 0 }));
+    l1Snaps.forEach((snap, i) => {
+      if (!snap.exists()) l1Ops.push(setDoc(l1Refs[i], { clubName: "", points: 0 }));
+    });
     if (l1Ops.length) await Promise.all(l1Ops);
 
-    const l1FirstData = (await getDoc(l1firstRef)).data() || { clubName: "", points: 0 };
-    const l1SecondData = (await getDoc(l1secondRef)).data() || { clubName: "", points: 0 };
-    const l1ThirdData = (await getDoc(l1thirdRef)).data() || { clubName: "", points: 0 };
+    // Get fresh data
+    const l1Data = await Promise.all(l1Refs.map(async ref => (await getDoc(ref)).data() || { clubName: "", points: 0 }));
 
-    let LOneArray = [
-      { club: l1FirstData.clubName, points: l1FirstData.points },
-      { club: l1SecondData.clubName, points: l1SecondData.points },
-      { club: l1ThirdData.clubName, points: l1ThirdData.points }
-    ];
-    console.log(LOneArray + "before editing");
+    let LOneArray = l1Data.map(d => ({ club: d.clubName, points: d.points }));
+    console.log("L1 Array before editing:", JSON.stringify(LOneArray));
     
     const index1 = LOneArray.findIndex(entry => entry.club === docSnap.data().clubName);
     if (index1 !== -1) {
       LOneArray.splice(index1, 1);
     }
-    console.log(LOneArray + "after filter");
     
     LOneArray.push({ club: docSnap.data().clubName, points: localPointTotal });
-    console.log(LOneArray + "after push");
-    
     LOneArray.sort((a, b) => b.points - a.points);
-    console.log(LOneArray + "after sort");
+    console.log("L1 Array after sort:", JSON.stringify(LOneArray));
 
-    await updateDoc(l1firstRef, {
-      clubName: LOneArray[0].club,
-      points: LOneArray[0].points,
-    });
-    await updateDoc(l1secondRef, {
-      clubName: LOneArray[1].club,
-      points: LOneArray[1].points,
-    });
-    await updateDoc(l1thirdRef, {
-      clubName: LOneArray[2].club,
-      points: LOneArray[2].points,
-    });
+    await Promise.all(l1Refs.map((ref, i) => updateDoc(ref, {
+      clubName: (LOneArray[i] && LOneArray[i].club) ? LOneArray[i].club : "",
+      points: (LOneArray[i] && LOneArray[i].points) ? LOneArray[i].points : 0,
+    })));
+    
     console.log("DONE L1");
   }
 
   if (type === "L2") {
-    console.log("running L2");
-    let LTwoArray = [
-      { club: nameL2First, points: pointL2First },
-      { club: nameL2second, points: pointL2Second },
-      { club: nameL2third, points: pointL2Third }
-    ];
-    console.log(LTwoArray + "before editing");
+    console.log("running L2 Leaderboard Update");
 
-    // Remove any existing entry with the same club name
+    const l2Refs = [
+      doc(db, "metadata", "L2first"),
+      doc(db, "metadata", "L2second"),
+      doc(db, "metadata", "L2third"),
+      doc(db, "metadata", "L2fourth"),
+      doc(db, "metadata", "L2fifth")
+    ];
+
+    // Ensure all docs exist
+    const l2Snaps = await Promise.all(l2Refs.map(ref => getDoc(ref)));
+    const l2Ops = [];
+    l2Snaps.forEach((snap, i) => {
+      if (!snap.exists()) l2Ops.push(setDoc(l2Refs[i], { clubName: "", points: 0 }));
+    });
+    if (l2Ops.length) await Promise.all(l2Ops);
+
+    // Get fresh data
+    const l2Data = await Promise.all(l2Refs.map(async ref => (await getDoc(ref)).data() || { clubName: "", points: 0 }));
+
+    let LTwoArray = l2Data.map(d => ({ club: d.clubName, points: d.points }));
+    console.log("L2 Array before editing:", JSON.stringify(LTwoArray));
+
     const index = LTwoArray.findIndex(entry => entry.club === docSnap.data().clubName);
-    
     if (index !== -1) {
       LTwoArray.splice(index, 1);
     }
-    console.log(LTwoArray + "after filter");
-    // Add the new/updated score
+    
     LTwoArray.push({ club: docSnap.data().clubName, points: localPointTotal });
-    console.log(LTwoArray + "after push");
-    // Sort by points in descending order
     LTwoArray.sort((a, b) => b.points - a.points);
-    console.log(LTwoArray + "after sort");
+    console.log("L2 Array after sort:", JSON.stringify(LTwoArray));
 
-    await updateDoc(doc(db, "metadata", "L2first"), {
-      clubName: LTwoArray[0].club,
-      points: LTwoArray[0].points,
-    });
-    await updateDoc(doc(db, "metadata", "L2second"), {
-      clubName: LTwoArray[1].club,
-      points: LTwoArray[1].points,
-    });
-    await updateDoc(doc(db, "metadata", "L2third"), {
-      clubName: LTwoArray[2].club,
-      points: LTwoArray[2].points,
-    });
-    console.log("DONE")
+    await Promise.all(l2Refs.map((ref, i) => updateDoc(ref, {
+      clubName: (LTwoArray[i] && LTwoArray[i].club) ? LTwoArray[i].club : "",
+      points: (LTwoArray[i] && LTwoArray[i].points) ? LTwoArray[i].points : 0,
+    })));
+
+    console.log("DONE L2")
   }
-}
-
-// ensure L1 leaderboard docs exist
-async function ensureL1LeaderboardDocs() {
-  const l1firstRef = doc(db, "metadata", "L1first");
-  const l1secondRef = doc(db, "metadata", "L1second");
-  const l1thirdRef = doc(db, "metadata", "L1third");
-
-  const [firstSnap, secondSnap, thirdSnap] = await Promise.all([
-    getDoc(l1firstRef),
-    getDoc(l1secondRef),
-    getDoc(l1thirdRef)
-  ]);
-
-  const ops = [];
-  if (!firstSnap.exists()) ops.push(setDoc(l1firstRef, { clubName: "", points: 0 }));
-  if (!secondSnap.exists()) ops.push(setDoc(l1secondRef, { clubName: "", points: 0 }));
-  if (!thirdSnap.exists()) ops.push(setDoc(l1thirdRef, { clubName: "", points: 0 }));
-  if (ops.length) await Promise.all(ops);
 }
 
 //fucntion to add leaderboard to home page
 export const loadLeaderboard = async function(){
-  // make sure L1 docs exist
-  await ensureL1LeaderboardDocs();
+  console.log("[LEADERBOARD] Sorting through club points to populate rankings...");
   
-  //gets data
-  const docRefOneFirst = doc(db, "metadata", "L1first");
-  const docSnapOneFirst = await getDoc(docRefOneFirst);
+  try {
+    const clubsCollection = collection(db, "clubs");
+    const snapshot = await getDocs(clubsCollection);
+    const allClubs = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
 
-  const docRefOneSecond = doc(db, "metadata", "L1second");
-  const docSnapOneSecond = await getDoc(docRefOneSecond);
+    // Process L1
+    const l1Clubs = allClubs
+      .filter(c => c.type === "L1")
+      .sort((a, b) => b.points - a.points)
+      .slice(0, 5);
 
-  const docRefOneThird = doc(db, "metadata", "L1third");
-  const docSnapOneThird = await getDoc(docRefOneThird);
+    const l1Ids = ["firstLOne", "secondLOne", "thirdLOne", "fourthsLOne", "fifthLOne"];
+    l1Ids.forEach((id, i) => {
+      const el = document.getElementById(id);
+      if (el) {
+          el.innerHTML = l1Clubs[i] && l1Clubs[i].clubName ? l1Clubs[i].clubName : "---";
+      }
+    });
 
-  const docRefTwoFirst = doc(db, "metadata", "L2first");
-  const docSnapTwoFirst = await getDoc(docRefTwoFirst);
-          
-  const docRefTwoSecond = doc(db, "metadata", "L2second");
-  const docSnapTwoSecond = await getDoc(docRefTwoSecond);
-          
-  const docRefTwoThree = doc(db, "metadata", "L2third");
-  const docSnapTwoThird = await getDoc(docRefTwoThree);
-      
-  // const docRefThreeFirst = doc(db, "metadata", "L3first");
-  // const docSnapThreeFirst = await getDoc(docRefThreeFirst);
-      
-  // const docRefThreeSecond = doc(db, "metadata", "L3second");
-  // const docSnapThreeSecond = await getDoc(docRefThreeSecond);
-          
-  // const docRefThreeThird = doc(db, "metadata", "L3third");
-  // const docSnapThreeThird = await getDoc(docRefThreeThird);
+    // Process L2
+    const l2Clubs = allClubs
+      .filter(c => c.type === "L2")
+      .sort((a, b) => b.points - a.points)
+      .slice(0, 5);
 
-  //adds data to page
-  var L1First = document.getElementById("firstLOne");
-  if (L1First && docSnapOneFirst.exists()) L1First.innerHTML = docSnapOneFirst.data().clubName;
+    const l2Ids = ["firstLTwo", "secondLTwo", "thirdLTwo", "fourthLTwo", "fifthLTwo"];
+    l2Ids.forEach((id, i) => {
+      const el = document.getElementById(id);
+      if (el) {
+          el.innerHTML = l2Clubs[i] && l2Clubs[i].clubName ? l2Clubs[i].clubName : "---";
+      }
+    });
 
-  var L1Second = document.getElementById("secondLOne");
-  if (L1Second && docSnapOneSecond.exists()) L1Second.innerHTML = docSnapOneSecond.data().clubName;
+    // Sync Metadata to keep cache updated
+    const syncOps = [];
+    const suffixes = ["first", "second", "third", "fourth", "fifth"];
+    
+    suffixes.forEach((suffix, i) => {
+      const l1Ref = doc(db, "metadata", `L1${suffix}`);
+      syncOps.push(setDoc(l1Ref, { 
+        clubName: l1Clubs[i] ? l1Clubs[i].clubName : "", 
+        points: l1Clubs[i] ? l1Clubs[i].points : 0 
+      }));
 
-  var L1Third = document.getElementById("thirdLOne");
-  if (L1Third && docSnapOneThird.exists()) L1Third.innerHTML = docSnapOneThird.data().clubName;
+      const l2Ref = doc(db, "metadata", `L2${suffix}`);
+      syncOps.push(setDoc(l2Ref, { 
+        clubName: l2Clubs[i] ? l2Clubs[i].clubName : "", 
+        points: l2Clubs[i] ? l2Clubs[i].points : 0 
+      }));
+    });
+    
+    await Promise.all(syncOps);
+    console.log("[LEADERBOARD] Rankings successfully updated and synced.");
 
-  var L2First = document.getElementById("firstLTwo");
-  if (L2First && docSnapTwoFirst.exists()) L2First.innerHTML = docSnapTwoFirst.data().clubName;
-  
-  var L2Second = document.getElementById("secondLTwo");
-  if (L2Second && docSnapTwoSecond.exists()) L2Second.innerHTML = docSnapTwoSecond.data().clubName;
-
-  var L2Third = document.getElementById("thirdLTwo");
-  if (L2Third && docSnapTwoThird.exists()) L2Third.innerHTML = docSnapTwoThird.data().clubName;
-
-  // var L3First = document.getElementById("firstLThree");
-  // if (L3First && docSnapThreeFirst.exists()) L3First.innerHTML = docSnapThreeFirst.data().clubName;
-
-  // var L3Second = document.getElementById("secondLThree");
-  // if (L3Second && docSnapThreeSecond.exists()) L3Second.innerHTML = docSnapThreeSecond.data().clubName;
-
-  // var L3Third = document.getElementById("thirdLThree");
-  // if (L3Third && docSnapThreeThird.exists()) L3Third.innerHTML = docSnapThreeThird.data().clubName;
-
+  } catch (err) {
+    console.error("Error loading leaderboard:", err);
+  }
 }
 
 //allows user to see their any club's point total... 
