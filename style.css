@@ -42,6 +42,9 @@ body {
 #logout{
     display: none;
 }
+#Add-Another-Acount{
+  display: none;
+}
 
 /* customizes the individual buttons in the nav bar */
 .button{
@@ -209,6 +212,34 @@ body {
 
 .topThree:last-child {
     border-bottom: none;
+}
+
+.topFive {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 10px 6px;
+    border-bottom: 1px solid #eee;
+    border-radius: 8px;
+}
+
+.topFive:nth-child(odd) {
+    background: #fafafa;
+}
+
+.topFive:last-child {
+    border-bottom: none;
+}
+
+.topFive p {
+    margin: 0;
+    flex: 1;
+    text-align: center;
+    font-weight: 500;
+    font-size: clamp(15px, 1.5vw, 17px);
+    color: #444;
 }
 
 .trophy {
@@ -1616,21 +1647,25 @@ option {
 .clubsInDanger,
 .resetPointsDiv {
     background: rgba(255, 255, 255, 0.75); backdrop-filter: blur(16px); border: 1px solid rgba(0, 0, 0, 0.07);
-    padding: 27px; color: black; box-shadow: none; display: flex; flex-direction: column;
+    padding: 20px; color: black; box-shadow: none; display: flex; flex-direction: column;
 }
 
 .announcement-controls {
-  min-height: 200px;
+  min-height: 160px;
+}
+
+.copyLeaderEmailsDiv {
+  min-height: 150px;
 }
 
 .clubsInDangerTitle {
-  font-size: 16px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px;
+  font-size: 14px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px;
   color: #333; border-bottom: 2px solid #7a0c0f; padding-bottom: 4px; margin-bottom: 20px;
 }
 
 /* Clubs in Danger Panel  */
 .clubsInDanger {
-  max-height: 50vh; overflow-y: auto; font-size: 16px; font-weight: 500; text-align: left;
+  max-height: 39vh; overflow-y: auto; font-size: 16px; font-weight: 500; text-align: left;
 }
 
 /* Container that holds all the clubâ€button elements */
@@ -1638,7 +1673,7 @@ option {
   display: flex; flex-direction: column; gap: 12px;
 }
 .clubsInDangerButtons button {
-  width: 100%; padding: 10px 14px; font-size: 16px; font-weight: 600;
+  width: 100%; padding: 10px 14px; font-size: 15px; font-weight: 600;
   background: transparent; color: #d0141a; border: 2px solid #d0141a;
   position: relative; overflow: hidden; transition: color 0.3s ease;
   text-align: center; letter-spacing: 0.5px; border-radius: 0; cursor: pointer;
@@ -1663,18 +1698,18 @@ option {
 
 /* Reset Points Panel */
 .resetPointsDiv {
-  height: 15vh;
+  height: 11vh;
 }
 /* Reset Points title */
 .resetPointsText {
-  font-size: 16px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: #333;
+  font-size: 14px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: #333;
   margin-bottom: 12px; border-bottom: 2px solid #7a0c0f; padding-bottom: 4px;
 }
 
 /* Reset button (same style as the club buttons) */
 .resetPointsButton {
-  margin-top: 14px; padding: 10px 14px; position: relative; overflow: hidden;
-  background: transparent; border: 2px solid #7a0c0f; color: #7a0c0f; font-size: 18px; font-weight:800;
+  margin-top: 13px; padding: 10px 14px; position: relative; overflow: hidden;
+  background: transparent; border: 2px solid #7a0c0f; color: #7a0c0f; font-size: 15px; font-weight:800;
   cursor: pointer; text-align: center; letter-spacing: 0.5px; border-radius: 0;
   transition: color 0.3s ease;
 }
