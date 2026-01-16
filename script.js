@@ -1011,3 +1011,73 @@ async function clearAnnouncementHistory() {
   el.logBtn.onclick=async()=>{ await renderLog(); show(el.logModal,true); };
   el.logCloseBtn.onclick=()=>show(el.logModal,false);
 })();
+
+// ————— COPY CLUB LEADER EMAILS ————— //
+export async function copyInDangerEmails() {
+  const databaseItems = await getDocs(collection(db, "clubs"));
+  const todaysDate = new Date();
+  const twoMonthsAgo = new Date(todaysDate);
+  twoMonthsAgo.setMonth(todaysDate.getMonth() - 2);
+
+  let emails = [];
+  databaseItems.forEach(club => {
+    const data = club.data();
+    const lastMeetingTimestamp = data.lastMeeting;
+    if (!lastMeetingTimestamp) return;
+
+    const lastMeetingDate = lastMeetingTimestamp.toDate();
+    const type = (data.type || "");
+
+    if (lastMeetingDate <= twoMonthsAgo && type !== "L3") {
+      if (data.contactEmails && Array.isArray(data.contactEmails)) {
+        emails.push(...data.contactEmails);
+      }
+    }
+  });
+
+  const emailString = [...new Set(emails)].join(", ");
+  if (emailString) {
+    try {
+      await navigator.clipboard.writeText(emailString);
+      alert("Copied emails for clubs in danger!");
+    } catch (err) {
+      console.error("Failed to copy: ", err);
+      alert("Failed to copy emails. Please check console.");
+    }
+  } else {
+    alert("No emails found for clubs in danger.");
+  }
+}
+
+export async function copyAllClubEmails() {
+  const databaseItems = await getDocs(collection(db, "clubs"));
+  let emails = [];
+  databaseItems.forEach(club => {
+    const data = club.data();
+    if (data.contactEmails && Array.isArray(data.contactEmails)) {
+      emails.push(...data.contactEmails);
+    }
+  });
+
+  const emailString = [...new Set(emails)].join(", ");
+  if (emailString) {
+    try {
+      await navigator.clipboard.writeText(emailString);
+      alert("Copied all club leader emails!");
+    } catch (err) {
+      console.error("Failed to copy: ", err);
+      alert("Failed to copy emails. Please check console.");
+    }
+  } else {
+    alert("No club leader emails found.");
+  }
+}
+
+// Wire up email copy buttons
+(() => {
+  const inDangerBtn = document.getElementById("indangerEmail");
+  const allEmailsBtn = document.getElementById("clubEmails");
+  if (inDangerBtn) inDangerBtn.onclick = copyInDangerEmails;
+  if (allEmailsBtn) allEmailsBtn.onclick = copyAllClubEmails;
+})();
+
