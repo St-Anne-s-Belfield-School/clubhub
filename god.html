@@ -8,7 +8,7 @@
     <script type="module" src="script.js"></script>
     <title>God</title>
     <script type="module">
-        import { checkLogin, displayClubsInDanger, renderAdminClubInfo, logout, resetPoints, deleteClub, goToClub} from './script.js';
+        import { checkLogin, displayClubsInDanger, renderAdminClubInfo, logout, resetPoints, deleteClub, goToClub, copyInDangerEmails, copyAllClubEmails} from './script.js';
         window.checkLogin = checkLogin;
         window.resetPoints = resetPoints;
         window.displayClubsInDanger = displayClubsInDanger;
@@ -16,6 +16,8 @@
         window.logout = logout;
         window.deleteClub = deleteClub;
         window.goToClub = goToClub;
+        window.copyInDangerEmails = copyInDangerEmails;
+        window.copyAllClubEmails = copyAllClubEmails;
         renderAdminClubInfo();
         checkLogin();
         displayClubsInDanger();
@@ -66,12 +68,18 @@
             </div>
         </div>
 
-
         <div class="clubsInDangerWrapper">
             <div class="resetPointsDiv announcement-controls">
             <div class="resetPointsText">Site-Wide Announcements</div>
             <button id="createAnnouncementBtn" class="resetPointsButton"><span>Create Site-Wide Announcement</span></button>
             <button id="announcementLogBtn" class="resetPointsButton"><span>Announcement Log</span></button>
+        </div>
+
+
+        <div class="resetPointsDiv copyLeaderEmailsDiv">
+            <div class="resetPointsText">Copy club leader emails</div>
+            <button id="indangerEmail" class="resetPointsButton"><span>Clubs in danger</span></button>
+            <button id="clubEmails" class="resetPointsButton"><span>All club leaders</span></button>
         </div>
             <div class="clubsInDanger" id="clubsInDangerDiv">
                 <div class="clubsInDangerTitle">Clubs in Danger!</div>
