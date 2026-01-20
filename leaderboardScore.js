@@ -17,6 +17,52 @@ const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
 
+// Function to add points for a new meeting
+export const addMeetingPoints = async function(clubUsername, isEvent) {
+  console.log(`[FUNCTION CALLED] addMeetingPoints for club: ${clubUsername}, isEvent: ${isEvent}`);
+  
+  const docRef = doc(db, "clubs", clubUsername);
+  const docSnap = await getDoc(docRef);
+  
+  if (!docSnap.exists()) return;
+
+  const pointTotal = Number(docSnap.data().points) || 0;
+  const meetingPoints = isEvent ? 3 : 2;
+  const newTotal = Number((pointTotal + meetingPoints).toFixed(3));
+
+  await updateDoc(docRef, { points: newTotal });
+  console.log(`[POINTS UPDATED] New total for ${clubUsername}: ${newTotal}`);
+  
+  // Refresh leaderboard if we are on index.html
+  if (typeof loadLeaderboard === "function") {
+    loadLeaderboard();
+  }
+}
+
+// Function to remove points when a meeting is deleted
+export const removeMeetingPoints = async function(clubUsername, attendance, isEvent) {
+  console.log(`[FUNCTION CALLED] removeMeetingPoints for club: ${clubUsername}`);
+  
+  const docRef = doc(db, "clubs", clubUsername);
+  const docSnap = await getDoc(docRef);
+  
+  if (!docSnap.exists()) return;
+
+  const pointTotal = Number(docSnap.data().points) || 0;
+  const memberCount = Number(docSnap.data().memberCount) || 1;
+  const attendancePoints = (Number(attendance) || 0) / memberCount;
+  const meetingPoints = isEvent ? 3 : 2;
+  
+  const newTotal = Math.max(0, Number((pointTotal - attendancePoints - meetingPoints).toFixed(3)));
+
+  await updateDoc(docRef, { points: newTotal });
+  console.log(`[POINTS UPDATED] New total for ${clubUsername}: ${newTotal}`);
+  
+  if (typeof loadLeaderboard === "function") {
+    loadLeaderboard();
+  }
+}
+
 //The function
 export const updatePoints = async function(clubUsername, oAttendance, nAttendance, oldEventBoolean, eventBoolean){
    //in Kate's code
@@ -48,21 +94,22 @@ export const updatePoints = async function(clubUsername, oAttendance, nAttendanc
   const docRef = doc(db, "clubs", username);
 
   const docSnap = await getDoc(docRef);
-  console.log("help");
+  if (!docSnap.exists()) {
+    console.error(`[ERROR] Club "${username}" not found in Firestore.`);
+    return;
+  }
+
   //getting pointTotal for club from firebase
-  const pointTotal = docSnap.data().points;
+  const pointTotal = Number(docSnap.data().points) || 0;
   console.log("old total" + pointTotal);
   console.log(`[CURRENT POINTS] Club "${docSnap.data().clubName}" currently has: ${pointTotal} points`);
-  // const meetingsCollectionRef = collection(docRef, "all-meetings");
-  // const databaseItem = doc(meetingsCollectionRef, meetingId);
-  // const attendance = doc(databaseItem, "attendance");
   
   //number of members in club
-  const memberCount = docSnap.data().memberCount;
+  const memberCount = Number(docSnap.data().memberCount) || 1; // Default to 1 to avoid division by zero
 
   //calculating point for attendances
-  var oldAttendancePoint = oldAttendance/memberCount;
-  var newAttendancePoint = newAttendance/memberCount;
+  var oldAttendancePoint = (Number(oldAttendance) || 0) / memberCount;
+  var newAttendancePoint = (Number(newAttendance) || 0) / memberCount;
   console.log("oldattendance: " + oldAttendance);
   console.log("newattendance: " + newAttendance);
   console.log("oldattendancept: " + oldAttendancePoint);
@@ -79,7 +126,9 @@ export const updatePoints = async function(clubUsername, oAttendance, nAttendanc
   console.log("og point total = " + pointTotal);
 
   //setting local point total to point total without any points related to this meeting. No duplicate points for one meeting.
-  localPointTotal = pointTotal - oldAttendancePoint - oldEventPoint;
+  localPointTotal = Number(pointTotal) - Number(oldAttendancePoint) - Number(oldEventPoint);
+
+  if (isNaN(localPointTotal)) localPointTotal = 0;
 
   console.log("reset point total = " + localPointTotal);
 
@@ -109,8 +158,10 @@ export const updatePoints = async function(clubUsername, oAttendance, nAttendanc
 
   console.log(newMeetingPoints);
   //adding new, updated points for meeting to meeting total
-  localPointTotal = localPointTotal + newMeetingPoints + newAttendancePoint;
+  localPointTotal = Number(localPointTotal) + Number(newMeetingPoints) + Number(newAttendancePoint);
 
+  if (isNaN(localPointTotal)) localPointTotal = 0;
+  
   localPointTotal = Number(localPointTotal.toFixed(3));
 
   console.log("end newTotal = " + localPointTotal);
@@ -224,12 +275,15 @@ export const loadLeaderboard = async function(){
     const snapshot = await getDocs(clubsCollection);
     const allClubs = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
 
+    console.log(`[LEADERBOARD] Fetched ${allClubs.length} clubs.`);
+
     // Process L1
     const l1Clubs = allClubs
-      .filter(c => c.type === "L1")
-      .sort((a, b) => Number(b.points) - Number(a.points))
+      .filter(c => (c.type || "").toUpperCase() === "L1")
+      .sort((a, b) => (Number(b.points) || 0) - (Number(a.points) || 0))
       .slice(0, 5);
 
+    console.log("[LEADERBOARD] Top 5 L1:", l1Clubs.map(c => `${c.clubName}: ${c.points}`));
 
     const l1Ids = ["firstLOne", "secondLOne", "thirdLOne", "fourthsLOne", "fifthLOne"];
     l1Ids.forEach((id, i) => {
@@ -241,10 +295,11 @@ export const loadLeaderboard = async function(){
 
     // Process L2
     const l2Clubs = allClubs
-      .filter(c => c.type === "L2")
-      .sort((a, b) => Number(b.points) - Number(a.points))
+      .filter(c => (c.type || "").toUpperCase() === "L2")
+      .sort((a, b) => (Number(b.points) || 0) - (Number(a.points) || 0))
       .slice(0, 5);
 
+    console.log("[LEADERBOARD] Top 5 L2:", l2Clubs.map(c => `${c.clubName}: ${c.points}`));
 
     const l2Ids = ["firstLTwo", "secondLTwo", "thirdLTwo", "fourthLTwo", "fifthLTwo"];
     l2Ids.forEach((id, i) => {
