@@ -3,7 +3,7 @@ import { initializeApp } from
 // TODO: import libraries for Cloud Firestore Database
 // https://firebase.google.com/docs/firestore
 import { getFirestore, collection, collectionGroup, addDoc, getDocs,getDoc, doc, updateDoc, deleteDoc, setDoc, Timestamp, query, where, orderBy } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-firestore.js";
-import {updatePoints} from "./leaderboardScore.js";
+import {updatePoints, addMeetingPoints, removeMeetingPoints} from "./leaderboardScore.js";
 import { getAuth, createUserWithEmailAndPassword, onAuthStateChanged , signInWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-auth.js";
 
 
@@ -759,6 +759,8 @@ async function createMeeting(id) {
       isAnEvent: isAnEvent,
       privateMeeting: !!isLeadersOnly
     });
+    // Add points for each created meeting
+    await addMeetingPoints(id, isAnEvent);
   }
 
   console.log(`Saved ${occurrences.length} meeting(s).`);
@@ -832,6 +834,14 @@ async function deleteMeeting(meetingID, id) {
     // Get a reference to the subcollection "all-meetings"
     const meetingsCollectionRef = collection(docRef, "all-meetings");
     const databaseItem = doc(meetingsCollectionRef, meetingID);
+
+    // Get meeting data before deleting to remove points
+    const meetingSnap = await getDoc(databaseItem);
+    if (meetingSnap.exists()) {
+      const data = meetingSnap.data();
+      await removeMeetingPoints(id, data.attendance || 0, data.isAnEvent || false);
+    }
+
     await deleteDoc(databaseItem);
     console.log("deleted!");
     location.reload();
