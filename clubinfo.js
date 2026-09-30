@@ -1143,7 +1143,7 @@ export async function cLogin() {
       //keeps user loged in for 2 weeks on the device they are using
       const expiryTime = Date.now() + 14 * 24 * 60 * 60 * 1000;
       localStorage.setItem("loginExpiry", expiryTime.toString());
-      alert('You will remaine logged in for two weeks, so please make sure you log out if this is a shared device!')
+      alert('You will remain logged in for two weeks, so please make sure you log out if this is a shared device!')
       localStorage.setItem("clubAuth", "true"); // set before redirect
       location.replace("clubDash.html");
     } 
