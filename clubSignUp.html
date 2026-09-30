@@ -34,11 +34,13 @@
   </script>
 
   <div class="loginBox">
-    <header class="subheading">Club Registration</header>
+    <header class="subheading">New Club Registration</header>
       <!-- label and then text input, both with ids -->
       <!-- The "placeholder" is the grey script in the text boxes before you type anything in-->
-      <label>Username:</label><input type="text" id="username" placeholder = "Username">
-      <label>Password:</label><input type="text" id="password" placeholder = "Password">
+       <p >Create your club's <b>account login</b> information</p>
+       <p style="font-size: small; text-align: center;">Please note: this is a CLUB login, not a personal login. The login information will get passed on to next year's club leaders, so <b>don't use a personal password.</b></p>
+      <label>Club Login Username:</label><input type="text" id="username" placeholder = "ex) baking-club or ftc-robotics-1">
+      <label>Club Login Password:</label><input type="text" id="password" placeholder = "this is a SHARED password among club leaders">
 
       <!-- Links to the moreInfo page and calls onclick function login(); uses username and password as parameters -->
       <button class="loginButton" onclick="register(document.getElementById('username').value, document.getElementById('password').value); ">Continue</button>
