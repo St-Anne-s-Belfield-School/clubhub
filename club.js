@@ -29,6 +29,12 @@ export const login2 = async function(){
 // }
 // creates new document in firebase per club; name of document is the username(which users should set as their club's name)
 export const register = async function(user, pass){
+    user = user.toLowerCase();
+    if(user.includes(" ")){
+        alert("Username may not contain a space. Please choose a new username.");
+        // stops function so that club cannot create an account with an already-in-use username
+        return;
+    }
 //added feature so that does not create new club in firebase until after more information page, in case someone goes to register page instead of login. Also fixed alert for if username already exits; wasnot showing up and was allowithrough to more info page
   // var username = document.getElementById('username').value;
   // var password = document.getElementById('password').value;
@@ -44,7 +50,7 @@ export const register = async function(user, pass){
     console.log("hiiii");
     console.log("username exists");
     // alert!!
-      alert("Username already exists. Choose new username.");
+      alert("Username already exists. Please choose a new username.");
       // stops function so that club cannot create an account with an already-in-use username
       return;
   }
